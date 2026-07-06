@@ -1,5 +1,5 @@
 // Library Management System - Starter Code with Complex Errors
-import { validateISBN,hello } from "./utils.js";
+import { validateISBN,validateString,validateNumber} from "./utils.js";
 // Global state management (scoping issues)
 let BOOKS = [];  // Missing declaration
 let MEMBERS = [];  // Wrong: should use let
@@ -11,12 +11,23 @@ class Book {
     constructor(isbn, title, author, year, availableCopies, totalCopies) {
         validateISBN(isbn);
         this.isbn = isbn;
+
+        validateString(title,"Title");
         this.title = title;
+
+        validateString(author,"Author");
         this.author = author;
+
+        validateYear(year, "Year");
         this.year = year;
+
         // Missing: availableCopies and totalCopies properties
+        validateNumber(availableCopies,"AvailableCopies");
         this.availableCopies = availableCopies;
+
+        validateNumber(totalCopies, "TotalCopies", true);
         this.totalCopies = totalCopies;
+
         this.checkedOut = [];
     }
     
@@ -287,3 +298,6 @@ function calculateFineAmount(daysLate) {
 
 // Missing: module exports
 // Missing: proper data structure for ISBN lookups (Map/Set)
+let book1 = new Book(null, "FGHJ", "Him", 2020, 500, 500)
+
+console.log(book1);
