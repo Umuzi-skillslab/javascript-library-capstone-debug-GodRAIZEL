@@ -1,5 +1,5 @@
 // Library Management System - Starter Code with Complex Errors
-
+import { validateISBN,hello } from "./utils.js";
 // Global state management (scoping issues)
 let BOOKS = [];  // Missing declaration
 let MEMBERS = [];  // Wrong: should use let
@@ -9,6 +9,7 @@ const MAX_BOOKS_PER_MEMBER = 5;  // Missing const
 // Book class with multiple issues
 class Book {
     constructor(isbn, title, author, year, availableCopies, totalCopies) {
+        validateISBN(isbn);
         this.isbn = isbn;
         this.title = title;
         this.author = author;

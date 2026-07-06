@@ -1,6 +1,7 @@
 {
   "name": "library-management-system",
   "version": "1.0.0",
+  "type": "module",
   "description": "Digital Library Management System - Starter Code",
   "main": "library.js",
   "scripts": {
