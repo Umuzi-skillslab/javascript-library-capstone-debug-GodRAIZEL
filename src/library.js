@@ -8,17 +8,26 @@ const MAX_BOOKS_PER_MEMBER = 5;  // Missing const
 
 // Book class with multiple issues
 class Book {
-    constructor(isbn, title, author, year, copies) {
+    constructor(isbn, title, author, year, availableCopies, totalCopies) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
         this.year = year;
         // Missing: availableCopies and totalCopies properties
+        this.availableCopies = availableCopies;
+        this.totalCopies = totalCopies;
         this.checkedOut = [];
     }
     
     // Missing: method to check availability
+    isAvailable(){
+        return this.availableCopies > 0;
+    }
     // Missing: method to get book info using template literals
+
+    getBookInfo(){
+        return `Name: ${this.title}\nAuthor: ${this.author}\nYear: ${this.year}\nTotal Copies: ${this.totalCopies}\nAvailable Copies: ${this.availableCopies}`
+    }
     
     checkOut(memberId) {
         // No validation for available copies
