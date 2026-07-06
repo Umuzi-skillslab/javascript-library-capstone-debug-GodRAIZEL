@@ -70,4 +70,4 @@ function validateYear(year) {
   }
 }
 
-export { validateISBN, validateString, validateNumber };
+export { validateISBN, validateString, validateNumber, validateYear};

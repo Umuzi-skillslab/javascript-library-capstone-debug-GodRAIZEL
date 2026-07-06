@@ -1,303 +1,326 @@
 // Library Management System - Starter Code with Complex Errors
-import { validateISBN,validateString,validateNumber} from "./utils.js";
+import {
+  validateISBN,
+  validateString,
+  validateNumber,
+  validateYear,
+} from "./utils.js";
 // Global state management (scoping issues)
-let BOOKS = [];  // Missing declaration
-let MEMBERS = [];  // Wrong: should use let
-const LATE_FEE_PER_DAY = 0.50;
-const MAX_BOOKS_PER_MEMBER = 5;  // Missing const
+let BOOK_ERRORS = {
+  noMoreCopies: "There are no more available copies for this book.",
+  alreadyBorrowed: "Cannot borrow book twice."
+};
+let BOOKS = []; // Missing declaration
+let MEMBERS = []; // Wrong: should use let
+const LATE_FEE_PER_DAY = 0.5;
+const MAX_BOOKS_PER_MEMBER = 5; // Missing const
 
 // Book class with multiple issues
 class Book {
-    constructor(isbn, title, author, year, availableCopies, totalCopies) {
-        validateISBN(isbn);
-        this.isbn = isbn;
+  constructor(isbn, title, author, year, availableCopies, totalCopies) {
+    validateISBN(isbn);
+    this.isbn = isbn;
 
-        validateString(title,"Title");
-        this.title = title;
+    validateString(title, "Title");
+    this.title = title;
 
-        validateString(author,"Author");
-        this.author = author;
+    validateString(author, "Author");
+    this.author = author;
 
-        validateYear(year, "Year");
-        this.year = year;
+    validateYear(year, "Year");
+    this.year = year;
 
-        // Missing: availableCopies and totalCopies properties
-        validateNumber(availableCopies,"AvailableCopies");
-        this.availableCopies = availableCopies;
+    // Missing: availableCopies and totalCopies properties
+    validateNumber(availableCopies, "AvailableCopies");
+    this.availableCopies = availableCopies;
 
-        validateNumber(totalCopies, "TotalCopies", true);
-        this.totalCopies = totalCopies;
+    validateNumber(totalCopies, "TotalCopies", true);
+    this.totalCopies = totalCopies;
 
-        this.checkedOut = [];
+    this.checkedOut = [];
+  }
+
+  // Missing: method to check availability
+  isAvailable() {
+    return this.availableCopies > 0;
+  }
+  // Missing: method to get book info using template literals
+
+  getBookInfo() {
+    return `Name: ${this.title}\nAuthor: ${this.author}\nYear: ${this.year}\nTotal Copies: ${this.totalCopies}\nAvailable Copies: ${this.availableCopies}`;
+  }
+
+  checkOut(memberId) {
+    // No validation for available copies
+
+    if(this.checkOut.includes(memberId)){
+        throw new Error(BOOK_ERRORS.alreadyBorrowed);
+    }
+
+    if (this.isAvailable()) {
+      this.checkedOut.push(memberId);
+      return true;
     }
     
-    // Missing: method to check availability
-    isAvailable(){
-        return this.availableCopies > 0;
-    }
-    // Missing: method to get book info using template literals
-
-    getBookInfo(){
-        return `Name: ${this.title}\nAuthor: ${this.author}\nYear: ${this.year}\nTotal Copies: ${this.totalCopies}\nAvailable Copies: ${this.availableCopies}`
-    }
+    throw new Error(BOOK_ERRORS.noMoreCopies);
     
-    checkOut(memberId) {
-        // No validation for available copies
-        this.checkedOut.push(memberId);
-        return true;
-    }
+  }
 }
 
 // Digital book class with inheritance problems
 class DigitalBook extends Book {
-    constructor(isbn, title, author, year, fileSize, format) {
-        // Missing: super() call with correct parameters
-        this.fileSize = fileSize;
-        this.format = format;
-        this.downloads = 0;
-    }
-    
-    download(memberId) {
-        // Should override differently than physical checkout
-        this.downloads = this.downloads + 1;
-    }
+  constructor(isbn, title, author, year, fileSize, format) {
+    // Missing: super() call with correct parameters
+    this.fileSize = fileSize;
+    this.format = format;
+    this.downloads = 0;
+  }
+
+  download(memberId) {
+    // Should override differently than physical checkout
+    this.downloads = this.downloads + 1;
+  }
 }
 
 // Member class with errors
 class Member {
-    constructor(id, name, email, membershipType) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.membershipType = membershipType;
-        this.borrowedBooks = [];
-        // Missing: joinDate property
+  constructor(id, name, email, membershipType) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+    this.membershipType = membershipType;
+    this.borrowedBooks = [];
+    // Missing: joinDate property
+  }
+
+  // Missing: method to calculate membership duration
+  // Missing: method using destructuring
+
+  canBorrow() {
+    // Wrong comparison operator
+    if ((this.borrowedBooks.length = MAX_BOOKS_PER_MEMBER)) {
+      return false;
     }
-    
-    // Missing: method to calculate membership duration
-    // Missing: method using destructuring
-    
-    canBorrow() {
-        // Wrong comparison operator
-        if (this.borrowedBooks.length = MAX_BOOKS_PER_MEMBER) {
-            return false;
-        }
-        return true;
-    }
+    return true;
+  }
 }
 
 // Premium member with inheritance issues
 class PremiumMember extends Member {
-    constructor(id, name, email) {
-        super(id, name, email, "premium");
-        // Missing: additional premium benefits properties
-    }
-    
-    // Should override canBorrow to allow more books
+  constructor(id, name, email) {
+    super(id, name, email, "premium");
+    // Missing: additional premium benefits properties
+  }
+
+  // Should override canBorrow to allow more books
 }
 
 // Complex function with nested loops and errors
 function findOverdueBooks(daysOverdue) {
-    var overdue = [];
-    
-    // Inefficient nested loops - should be optimized
-    for (var i = 0; i < books.length; i++) {
-        for (var j = 0; j < books[i].checkedOut.length; j++) {
-            // Missing: actual date checking logic
-            // Wrong variable scoping
-            var checkoutRecord = books[i].checkedOut[j];
-            overdue.push(checkoutRecord);
-        }
+  var overdue = [];
+
+  // Inefficient nested loops - should be optimized
+  for (var i = 0; i < books.length; i++) {
+    for (var j = 0; j < books[i].checkedOut.length; j++) {
+      // Missing: actual date checking logic
+      // Wrong variable scoping
+      var checkoutRecord = books[i].checkedOut[j];
+      overdue.push(checkoutRecord);
     }
-    
-    return overdue;
+  }
+
+  return overdue;
 }
 
 // Function with while loop error
 function processReturnQueue(queue) {
-    var index = 0;
-    
-    // Infinite loop potential
-    while (index < queue.length) {
-        var item = queue[index];
-        
-        // Process item
-        console.log("Processing return: " + item);
-        
-        // Missing: index increment
-    }
+  var index = 0;
+
+  // Infinite loop potential
+  while (index < queue.length) {
+    var item = queue[index];
+
+    // Process item
+    console.log("Processing return: " + item);
+
+    // Missing: index increment
+  }
 }
 
 // Recursive function with multiple errors
 function searchBooksByCategory(bookList, category, index) {
-    // Missing: base case
-    // Missing: undefined/null checks
-    // Wrong comparison
-    
-    if (bookList[index].category = category) {
-        return [bookList[index]].concat(searchBooksByCategory(bookList, category, index + 1));
-    }
-    
-    return searchBooksByCategory(bookList, category, index + 1);
+  // Missing: base case
+  // Missing: undefined/null checks
+  // Wrong comparison
+
+  if ((bookList[index].category = category)) {
+    return [bookList[index]].concat(
+      searchBooksByCategory(bookList, category, index + 1),
+    );
+  }
+
+  return searchBooksByCategory(bookList, category, index + 1);
 }
 
 // Function missing array methods
 function getBooksByAuthor(authorName) {
-    var result = [];
-    
-    // Should use filter method
-    for (var i = 0; i < books.length; i++) {
-        if (books[i].author == authorName) {  // Should use ===
-            result.push(books[i]);
-        }
+  var result = [];
+
+  // Should use filter method
+  for (var i = 0; i < books.length; i++) {
+    if (books[i].author == authorName) {
+      // Should use ===
+      result.push(books[i]);
     }
-    
-    return result;
+  }
+
+  return result;
 }
 
 // Function that should use reduce
 function calculateTotalLateFees(memberRecord) {
-    var total = 0;
-    
-    // Should use reduce on array
-    for (var i = 0; i < memberRecord.overdueBooks.length; i++) {
-        total = total + memberRecord.overdueBooks[i].daysLate * LATE_FEE_PER_DAY;
-    }
-    
-    return total;
+  var total = 0;
+
+  // Should use reduce on array
+  for (var i = 0; i < memberRecord.overdueBooks.length; i++) {
+    total = total + memberRecord.overdueBooks[i].daysLate * LATE_FEE_PER_DAY;
+  }
+
+  return total;
 }
 
 // Function missing spread operator
 function combineBookCollections(fiction, nonFiction, reference) {
-    // Should use spread operator
-    var combined = [];
-    
-    for (var i = 0; i < fiction.length; i++) combined.push(fiction[i]);
-    for (var i = 0; i < nonFiction.length; i++) combined.push(nonFiction[i]);
-    for (var i = 0; i < reference.length; i++) combined.push(reference[i]);
-    
-    return combined;
+  // Should use spread operator
+  var combined = [];
+
+  for (var i = 0; i < fiction.length; i++) combined.push(fiction[i]);
+  for (var i = 0; i < nonFiction.length; i++) combined.push(nonFiction[i]);
+  for (var i = 0; i < reference.length; i++) combined.push(reference[i]);
+
+  return combined;
 }
 
 // Function missing rest parameters
 function addMultipleBooks(book1, book2, book3) {
-    // Should use rest parameters to accept unlimited books
-    books.push(book1);
-    books.push(book2);
-    books.push(book3);
+  // Should use rest parameters to accept unlimited books
+  books.push(book1);
+  books.push(book2);
+  books.push(book3);
 }
 
 // Function missing destructuring
 function updateMemberInfo(member, updates) {
-    // Should destructure updates object
-    member.name = updates.name;
-    member.email = updates.email;
-    member.membershipType = updates.membershipType;
-    
-    return member;
+  // Should destructure updates object
+  member.name = updates.name;
+  member.email = updates.email;
+  member.membershipType = updates.membershipType;
+
+  return member;
 }
 
 // Function with no error handling
 function borrowBook(memberId, isbn) {
-    // Missing: try-catch block
-    // Missing: validation for undefined/null
-    // Missing: typeof checks
-    
-    var member = findMemberById(memberId);
-    var book = findBookByISBN(isbn);
-    
-    // No check if member or book exists
-    if (member.canBorrow()) {
-        book.checkOut(memberId);
-        member.borrowedBooks.push(isbn);
-        return true;
-    }
-    
-    return false;
+  // Missing: try-catch block
+  // Missing: validation for undefined/null
+  // Missing: typeof checks
+
+  var member = findMemberById(memberId);
+  var book = findBookByISBN(isbn);
+
+  // No check if member or book exists
+  if (member.canBorrow()) {
+    book.checkOut(memberId);
+    member.borrowedBooks.push(isbn);
+    return true;
+  }
+
+  return false;
 }
 
 // Helper functions with errors
 function findMemberById(id) {
-    // Should use find method
-    for (var i = 0; i < members.length; i++) {
-        if (members[i].id = id) {  // Wrong operator
-            return members[i];
-        }
+  // Should use find method
+  for (var i = 0; i < members.length; i++) {
+    if ((members[i].id = id)) {
+      // Wrong operator
+      return members[i];
     }
-    // Returns undefined implicitly - should handle explicitly
+  }
+  // Returns undefined implicitly - should handle explicitly
 }
 
 function findBookByISBN(isbn) {
-    var i = 0;
-    
-    // Wrong loop choice
-    while (i < books.length) {
-        if (books[i].isbn === isbn) {
-            return books[i];
-        }
-        i = i + 1;
+  var i = 0;
+
+  // Wrong loop choice
+  while (i < books.length) {
+    if (books[i].isbn === isbn) {
+      return books[i];
     }
-    
-    return null;
+    i = i + 1;
+  }
+
+  return null;
 }
 
 // Statistics object with missing methods
 var LibraryStats = {
-    totalBooks: 0,
-    totalMembers: 0,
-    totalBorrowings: 0,
-    
-    // Missing: method using Math object for calculations
-    // Missing: method using for-of loop
-    // Missing: method returning object with destructuring
-    
-    updateStats: function() {
-        this.totalBooks = books.length;
-        this.totalMembers = members.length;
-    },
-    
-    getMostPopularBook: function() {
-        // Inefficient implementation - should use reduce
-        var maxCheckouts = 0;
-        var popularBook = null;
-        
-        for (var i = 0; i < books.length; i++) {
-            if (books[i].checkedOut.length > maxCheckouts) {
-                maxCheckouts = books[i].checkedOut.length;
-                popularBook = books[i];
-            }
-        }
-        
-        return popularBook;
+  totalBooks: 0,
+  totalMembers: 0,
+  totalBorrowings: 0,
+
+  // Missing: method using Math object for calculations
+  // Missing: method using for-of loop
+  // Missing: method returning object with destructuring
+
+  updateStats: function () {
+    this.totalBooks = books.length;
+    this.totalMembers = members.length;
+  },
+
+  getMostPopularBook: function () {
+    // Inefficient implementation - should use reduce
+    var maxCheckouts = 0;
+    var popularBook = null;
+
+    for (var i = 0; i < books.length; i++) {
+      if (books[i].checkedOut.length > maxCheckouts) {
+        maxCheckouts = books[i].checkedOut.length;
+        popularBook = books[i];
+      }
     }
+
+    return popularBook;
+  },
 };
 
 // Function with string manipulation errors
 function formatBookInfo(book) {
-    // Should use template literals
-    var info = "Title: " + book.title + "\n";
-    info = info + "Author: " + book.author + "\n";
-    info = info + "Year: " + book.year;
-    
-    // Missing: proper string methods (trim, toUpperCase, etc.)
-    
-    return info;
+  // Should use template literals
+  var info = "Title: " + book.title + "\n";
+  info = info + "Author: " + book.author + "\n";
+  info = info + "Year: " + book.year;
+
+  // Missing: proper string methods (trim, toUpperCase, etc.)
+
+  return info;
 }
 
 // Function with number/type issues
 function calculateFineAmount(daysLate) {
-    // Missing: typeof check
-    // Missing: NaN handling
-    // Missing: null/undefined check
-    
-    var fine = daysLate * LATE_FEE_PER_DAY;
-    
-    // Should use toFixed for currency
-    return fine;
+  // Missing: typeof check
+  // Missing: NaN handling
+  // Missing: null/undefined check
+
+  var fine = daysLate * LATE_FEE_PER_DAY;
+
+  // Should use toFixed for currency
+  return fine;
 }
 
 // Missing: module exports
 // Missing: proper data structure for ISBN lookups (Map/Set)
-let book1 = new Book(null, "FGHJ", "Him", 2020, 500, 500)
+let book1 = new Book(null, "FGHJ", "Him", 2020, 500, 500);
 
 console.log(book1);
