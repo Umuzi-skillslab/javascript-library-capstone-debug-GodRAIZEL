@@ -4,11 +4,13 @@ import {
   validateString,
   validateNumber,
   validateYear,
+  validateInteger
 } from "./utils.js";
 // Global state management (scoping issues)
-let BOOK_ERRORS = {
+const BOOK_ERRORS = {
   noMoreCopies: "There are no more available copies for this book.",
-  alreadyBorrowed: "Cannot borrow book twice."
+  alreadyBorrowed: "Cannot borrow book twice.",
+  invalidBookCopies: "Available copies cannot be more than total copies. Please provide valid values"
 };
 let BOOKS = []; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
@@ -17,7 +19,7 @@ const MAX_BOOKS_PER_MEMBER = 5; // Missing const
 
 // Book class with multiple issues
 class Book {
-  constructor(isbn, title, author, year, availableCopies, totalCopies) {
+  constructor(isbn, title, author, year, totalCopies, availableCopies) {
     validateISBN(isbn);
     this.isbn = isbn;
 
@@ -31,11 +33,14 @@ class Book {
     this.year = year;
 
     // Missing: availableCopies and totalCopies properties
-    validateNumber(availableCopies, "AvailableCopies");
-    this.availableCopies = availableCopies;
-
-    validateNumber(totalCopies, "TotalCopies", true);
+    validateInteger(totalCopies, "Total Copies", true);
     this.totalCopies = totalCopies;
+
+    validateInteger(availableCopies, "Available Copies");
+    if(availableCopies > totalCopies){
+        throw new Error(BOOK_ERRORS.invalidBookCopies)
+    }
+    this.availableCopies = availableCopies;
 
     this.checkedOut = [];
   }
@@ -52,16 +57,18 @@ class Book {
 
   checkOut(memberId) {
     // No validation for available copies
+    validateString(memberId,"Member ID");
 
-    if(this.checkOut.includes(memberId)){
+    if(this.checkedOut.includes(memberId)){
         throw new Error(BOOK_ERRORS.alreadyBorrowed);
     }
 
     if (this.isAvailable()) {
       this.checkedOut.push(memberId);
+      this.availableCopies -= 1;
       return true;
     }
-    
+
     throw new Error(BOOK_ERRORS.noMoreCopies);
     
   }
