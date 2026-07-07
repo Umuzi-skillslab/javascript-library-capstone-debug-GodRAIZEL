@@ -10,7 +10,8 @@ import {
 const BOOK_ERRORS = {
   noMoreCopies: "There are no more available copies for this book.",
   alreadyBorrowed: "Cannot borrow book twice.",
-  invalidBookCopies: "Available copies cannot be more than total copies. Please provide valid values"
+  invalidBookCopies: "Available copies cannot be more than total copies. Please provide valid values",
+  digitalCheckouts: "Digital books cannot be checked out."
 };
 let BOOKS = []; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
@@ -51,7 +52,7 @@ class Book {
   }
   // Missing: method to get book info using template literals
 
-  getBookInfo() {
+  getInfo() {
     return `Name: ${this.title}\nAuthor: ${this.author}\nYear: ${this.year}\nTotal Copies: ${this.totalCopies}\nAvailable Copies: ${this.availableCopies}`;
   }
 
@@ -78,13 +79,28 @@ class Book {
 class DigitalBook extends Book {
   constructor(isbn, title, author, year, fileSize, format) {
     // Missing: super() call with correct parameters
+    super(isbn,title,author,year,0,0);
+
+    validateNumber(fileSize,"File Size");
     this.fileSize = fileSize;
+
+    validateString(format, "Format");
     this.format = format;
+
     this.downloads = 0;
+  }
+
+  isAvailable(){
+    return true;
+  }
+
+  checkOut(){
+    throw new Error(BOOK_ERRORS.digitalCheckouts);
   }
 
   download(memberId) {
     // Should override differently than physical checkout
+    validateString(memberId, "Member ID");
     this.downloads = this.downloads + 1;
   }
 }
