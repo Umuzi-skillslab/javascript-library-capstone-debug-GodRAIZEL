@@ -4,14 +4,16 @@ import {
   validateString,
   validateNumber,
   validateYear,
-  validateInteger
+  validateInteger,
 } from "./utils.js";
+
 // Global state management (scoping issues)
 const BOOK_ERRORS = {
   noMoreCopies: "There are no more available copies for this book.",
   alreadyBorrowed: "Cannot borrow book twice.",
-  invalidBookCopies: "Available copies cannot be more than total copies. Please provide valid values",
-  digitalCheckouts: "Digital books cannot be checked out."
+  invalidBookCopies:
+    "Available copies cannot be more than total copies. Please provide valid values",
+  digitalCheckouts: "Digital books cannot be checked out.",
 };
 let BOOKS = []; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
@@ -38,8 +40,8 @@ class Book {
     this.totalCopies = totalCopies;
 
     validateInteger(availableCopies, "Available Copies");
-    if(availableCopies > totalCopies){
-        throw new Error(BOOK_ERRORS.invalidBookCopies)
+    if (availableCopies > totalCopies) {
+      throw new Error(BOOK_ERRORS.invalidBookCopies);
     }
     this.availableCopies = availableCopies;
 
@@ -58,10 +60,10 @@ class Book {
 
   checkOut(memberId) {
     // No validation for available copies
-    validateString(memberId,"Member ID");
+    validateString(memberId, "Member ID");
 
-    if(this.checkedOut.includes(memberId)){
-        throw new Error(BOOK_ERRORS.alreadyBorrowed);
+    if (this.checkedOut.includes(memberId)) {
+      throw new Error(BOOK_ERRORS.alreadyBorrowed);
     }
 
     if (this.isAvailable()) {
@@ -71,7 +73,6 @@ class Book {
     }
 
     throw new Error(BOOK_ERRORS.noMoreCopies);
-    
   }
 }
 
@@ -79,9 +80,9 @@ class Book {
 class DigitalBook extends Book {
   constructor(isbn, title, author, year, fileSize, format) {
     // Missing: super() call with correct parameters
-    super(isbn,title,author,year,0,0);
+    super(isbn, title, author, year, 0, 0);
 
-    validateNumber(fileSize,"File Size");
+    validateNumber(fileSize, "File Size");
     this.fileSize = fileSize;
 
     validateString(format, "Format");
@@ -90,38 +91,70 @@ class DigitalBook extends Book {
     this.downloads = 0;
   }
 
-  isAvailable(){
+  isAvailable() {
     return true;
   }
 
-  checkOut(){
+  checkOut() {
     throw new Error(BOOK_ERRORS.digitalCheckouts);
   }
 
   download(memberId) {
     // Should override differently than physical checkout
     validateString(memberId, "Member ID");
-    this.downloads = this.downloads + 1;
+    this.downloads += 1;
   }
 }
 
 // Member class with errors
 class Member {
-  constructor(id, name, email, membershipType) {
+  constructor(id, name, email, membershipType, joinDate) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.membershipType = membershipType;
     this.borrowedBooks = [];
     // Missing: joinDate property
+    this.joinDate = joinDate;
   }
 
   // Missing: method to calculate membership duration
+  getMembershipDuration() {
+    let joinDateObject = new Date(this.joinDate);
+    let currentDate = new Date();
+
+    let years = currentDate.getFullYear() - joinDateObject.getFullYear();
+    let months = currentDate.getMonth() - joinDateObject.getMonth();
+    let days = currentDate.getDate() - joinDateObject.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      let prevMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        0,
+      );
+      days += prevMonth.getDate();
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    return `Membership Duration: ${years} years ${months} months ${days} days`;
+  }
+
   // Missing: method using destructuring
+  getMemberInfo() {
+    const {id, name, email, membershipType, joinDate, borrowedBooks} = this;
+
+    return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks}`;
+  }
 
   canBorrow() {
     // Wrong comparison operator
-    if ((this.borrowedBooks.length = MAX_BOOKS_PER_MEMBER)) {
+    if ((this.borrowedBooks.length === MAX_BOOKS_PER_MEMBER)) {
       return false;
     }
     return true;
