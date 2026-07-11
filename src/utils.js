@@ -28,7 +28,7 @@ const ERRORS = {
 
 };
 
-const VALID_MEMBERSHIP_TYPES = ["Standard", "Premium"];
+const VALID_MEMBERSHIP_TYPES = ["standard", "premium"];
 
 function validateISBN(isbn) {
     validateString(isbn, "ISBN");

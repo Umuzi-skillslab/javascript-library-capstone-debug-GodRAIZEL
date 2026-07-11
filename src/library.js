@@ -4,7 +4,7 @@ import {
   validateString,
   validateNumber,
   validateYear,
-  validateInteger,validateEmail,validateDate,validateMembershipType
+  validateInteger, validateEmail, validateDate, validateMembershipType
 } from "./utils.js";
 
 // Global state management (scoping issues)
@@ -19,6 +19,7 @@ let BOOKS = []; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
 const LATE_FEE_PER_DAY = 0.5;
 const MAX_BOOKS_PER_MEMBER = 5; // Missing const
+const MAX_BOOKS_PER_PREMIUM_MEMBER = 10;
 
 // Book class with multiple issues
 class Book {
@@ -156,14 +157,14 @@ class Member {
 
   // Missing: method using destructuring
   getMemberInfo() {
-    const {id, name, email, membershipType, joinDate, borrowedBooks} = this;
+    const { id, name, email, membershipType, joinDate, borrowedBooks } = this;
 
     return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks}`;
   }
 
   canBorrow() {
     // Wrong comparison operator
-    if ((this.borrowedBooks.length >= MAX_BOOKS_PER_MEMBER)) {
+    if (this.borrowedBooks.length >= MAX_BOOKS_PER_MEMBER) {
       return false;
     }
     return true;
@@ -172,12 +173,19 @@ class Member {
 
 // Premium member with inheritance issues
 class PremiumMember extends Member {
-  constructor(id, name, email) {
-    super(id, name, email, "premium");
-    // Missing: additional premium benefits properties
+  constructor(id, name, email, joinDate) {
+    super(id, name, email, "premium", joinDate);
+    this.maxBorrowLimit = MAX_BOOKS_PER_PREMIUM_MEMBER;
   }
 
   // Should override canBorrow to allow more books
+  canBorrow() {
+    if (this.borrowedBooks.length >= this.maxBorrowLimit) {
+      return false
+    }
+
+    return true;
+  }
 }
 
 // Complex function with nested loops and errors
