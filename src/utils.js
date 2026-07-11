@@ -23,7 +23,8 @@ const ERRORS = {
     invalidEmail: "Invalid email. Please provide a valid email.",
     invalidDate: "Invalid date. Please select a valid date.",
     invalidFutureDate: "Invalid date. Date cannot be from the future.",
-    invalidMembershipType: "Invalid membership type. Valid membership types are 'Standard' or 'Premium'"
+    invalidMembershipType: "Invalid membership type. Valid membership types are 'Standard' or 'Premium'",
+    invalidArray:(variableName)=>`Please enter a valid array for ${variableName}`
     
 
 };
@@ -119,6 +120,13 @@ function validateMembershipType(membershipType){
     if(!VALID_MEMBERSHIP_TYPES.includes(membershipType)){
         throw new Error(ERRORS.invalidMembershipType)
     }
+}
+
+function validateArray(someArray,variableName){
+    if(!Array.isArray(someArray)){
+        throw new Error(ERRORS.invalidArray(variableName));
+    }
+
 }
 
 export { validateISBN, validateString, validateNumber, validateYear, validateInteger, validateEmail, validateDate, validateMembershipType};

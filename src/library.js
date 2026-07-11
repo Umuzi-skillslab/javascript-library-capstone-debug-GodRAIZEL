@@ -15,7 +15,24 @@ const BOOK_ERRORS = {
     "Available copies cannot be more than total copies. Please provide valid values",
   digitalCheckouts: "Digital books cannot be checked out.",
 };
-let BOOKS = []; // Missing declaration
+let BOOKS = [{
+    isbn: "978...",
+    title: "Clean Code",
+    author: "Robert Martin",
+    year: 2008,
+    availableCopies: 2,
+    totalCopies: 5,
+    checkedOut: []
+  },
+  {
+    isbn: "978...",
+    title: "The Pragmatic Programmer",
+    author: "Andrew Hunt",
+    year: 1999,
+    availableCopies: 1,
+    totalCopies: 3,
+    checkedOut: []
+  }]; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
 const LATE_FEE_PER_DAY = 0.5;
 const MAX_BOOKS_PER_MEMBER = 5; // Missing const
@@ -197,34 +214,46 @@ class PremiumMember extends Member {
 
 // Complex function with nested loops and errors
 function findOverdueBooks(daysOverdue) {
-  let overdue = [];
+  validateInteger(daysOverdue, "Days Overdue", true);
 
-  // Inefficient nested loops - should be optimized
-  for (let i = 0; i < books.length; i++) {
-    for (let j = 0; j < books[i].checkedOut.length; j++) {
-      // Missing: actual date checking logic
-      // Wrong variable scoping
-      var checkoutRecord = books[i].checkedOut[j];
-      overdue.push(checkoutRecord);
-    }
-  }
+  const today = new Date();
 
-  return overdue;
+  return BOOKS.flatMap(book =>
+    book.checkedOut
+      .filter(record => {
+        const borrowDate = new Date(record.borrowDate);
+
+        const daysBorrowed = Math.floor(
+          (today - borrowDate) / (1000 * 60 * 60 * 24)
+        );
+
+        return daysBorrowed >= daysOverdue;
+      })
+      .map(record => ({
+        book,
+        memberId: record.memberId,
+        borrowDate: record.borrowDate,
+        daysBorrowed: Math.floor(
+          (today - new Date(record.borrowDate)) /
+            (1000 * 60 * 60 * 24)
+        )
+      }))
+  );
 }
 
 // Function with while loop error
 function processReturnQueue(queue) {
-  var index = 0;
+    validateArray(queue, "Queue");
 
-  // Infinite loop potential
-  while (index < queue.length) {
-    var item = queue[index];
+    let index = 0;
 
-    // Process item
-    console.log("Processing return: " + item);
+    while (index < queue.length) {
+        const item = queue[index];
 
-    // Missing: index increment
-  }
+        console.log(`Processing return: ${item}`);
+
+        index++;
+    }
 }
 
 // Recursive function with multiple errors
