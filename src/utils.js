@@ -17,6 +17,7 @@ const ERRORS = {
         `Invalid type for ${variableName}. Please provide a value of type Number for ${variableName}`,
     numGreaterThanZero: (variableName) =>
         `${variableName} must be greater than zero. Please provide a valid number for ${variableName}`,
+    numLessThanZero:(variableName)=>`${variableName} must not be less than zero. Please provide a valid number for ${variableName}`,
     invalidIntegerValue: (variableName) => `Please provide a valid integer value for ${variableName}.`,
     invalidYear:
         "Year provided cannot be from the future please provide a valid Year.",
@@ -73,9 +74,14 @@ function validateNumber(numberValue, variableName, greaterThanZero = false) {
         throw new Error(ERRORS.invalidNumberType(variableName));
     }
 
+    if(numberValue<0){
+        throw new Error(ERRORS.numLessThanZero(variableName));
+    }
+
     if (greaterThanZero && numberValue < 0) {
         throw new Error(ERRORS.numGreaterThanZero(variableName));
     }
+
 }
 
 function validateInteger(integerValue, variableName, greaterThanZero = false) {

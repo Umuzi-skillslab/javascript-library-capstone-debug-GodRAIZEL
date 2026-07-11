@@ -42,7 +42,7 @@ const MAX_BOOKS_PER_PREMIUM_MEMBER = 10;
 
 // Book class with multiple issues
 class Book {
-  constructor(isbn, title, author, year, totalCopies, availableCopies) {
+  constructor(isbn, title, author, year, totalCopies, availableCopies, category) {
     validateISBN(isbn);
     this.isbn = isbn;
 
@@ -52,7 +52,7 @@ class Book {
     validateString(author, "Author");
     this.author = author;
 
-    validateYear(year, "Year");
+    validateYear(year);
     this.year = year;
 
     // Missing: availableCopies and totalCopies properties
@@ -64,6 +64,9 @@ class Book {
       throw new Error(BOOK_ERRORS.invalidBookCopies);
     }
     this.availableCopies = availableCopies;
+
+    validateString(category, "Category");
+    this.category = category;
 
     this.checkedOut = [];
   }
@@ -86,6 +89,10 @@ class Book {
       record => record.memberId === memberId
     );
 
+    if (alreadyBorrowed) {
+    throw new Error(BOOK_ERRORS.alreadyBorrowed);
+  }
+
     const borrowDate = new Date();
 
     if (this.isAvailable()) {
@@ -105,9 +112,9 @@ class Book {
 
 // Digital book class with inheritance problems
 class DigitalBook extends Book {
-  constructor(isbn, title, author, year, fileSize, format) {
+  constructor(isbn, title, author, year, fileSize, format, category) {
     // Missing: super() call with correct parameters
-    super(isbn, title, author, year, 0, 0);
+    super(isbn, title, author, year, 0, 0, category);
 
     validateNumber(fileSize, "File Size");
     this.fileSize = fileSize;
@@ -129,7 +136,8 @@ class DigitalBook extends Book {
   download(memberId) {
     // Should override differently than physical checkout
     validateString(memberId, "Member ID");
-    this.downloads += 1;
+    this.downloads++;
+    return true;
   }
 }
 
@@ -185,7 +193,7 @@ class Member {
   getMemberInfo() {
     const { id, name, email, membershipType, joinDate, borrowedBooks } = this;
 
-    return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks}`;
+    return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks.join(",")}`;
   }
 
   canBorrow() {
@@ -365,7 +373,7 @@ function borrowBook(memberId, isbn) {
       throw new Error(BOOK_ERRORS.memberNotFound(memberId));
     }
     if (!book) {
-      throw new Error(BOOK_ERRORS.isbnNotFound(isbn));
+      throw new Error(BOOK_ERRORS.bookNotFoundNot(isbn));
     }
     if (!member.canBorrow() || !book.isAvailable()) {
       return false;
@@ -383,70 +391,72 @@ function borrowBook(memberId, isbn) {
 // Helper functions with errors
 function findMemberById(id) {
   // Should use find method
-  for (var i = 0; i < members.length; i++) {
-    if ((members[i].id = id)) {
-      // Wrong operator
-      return members[i];
-    }
-  }
-  // Returns undefined implicitly - should handle explicitly
+  validateString(id, "Member ID");
+  return MEMBERS.find((member) => member.id === id);
 }
 
 function findBookByISBN(isbn) {
-  var i = 0;
+  validateISBN(isbn);
 
   // Wrong loop choice
-  while (i < books.length) {
-    if (books[i].isbn === isbn) {
-      return books[i];
-    }
-    i = i + 1;
-  }
-
-  return null;
+  return BOOKS.find((book) => book.isbn === isbn) || null;
 }
 
 // Statistics object with missing methods
-var LibraryStats = {
+const LibraryStats = {
   totalBooks: 0,
   totalMembers: 0,
   totalBorrowings: 0,
 
-  // Missing: method using Math object for calculations
-  // Missing: method using for-of loop
-  // Missing: method returning object with destructuring
-
-  updateStats: function () {
-    this.totalBooks = books.length;
-    this.totalMembers = members.length;
+  updateStats() {
+    this.totalBooks = BOOKS.length;
+    this.totalMembers = MEMBERS.length;
+    this.totalBorrowings = MEMBERS.reduce((sum, member) => sum + member.borrowedBooks.length, 0);
   },
 
-  getMostPopularBook: function () {
-    // Inefficient implementation - should use reduce
-    var maxCheckouts = 0;
-    var popularBook = null;
+  getMostPopularBook() {
+    if (BOOKS.length === 0) return null;
+    return BOOKS.reduce(
+      (mostPopular, book) =>
+        book.checkedOut.length > (mostPopular ? mostPopular.checkedOut.length : -1) ? book : mostPopular,
+      null
+    );
+  },
 
-    for (var i = 0; i < books.length; i++) {
-      if (books[i].checkedOut.length > maxCheckouts) {
-        maxCheckouts = books[i].checkedOut.length;
-        popularBook = books[i];
-      }
+  // Uses the Math object for calculations.
+  getAverageCopiesPerBook() {
+    if (BOOKS.length === 0) return 0;
+    const total = BOOKS.reduce((sum, book) => sum + book.totalCopies, 0);
+    return Math.round((total / BOOKS.length) * 100) / 100;
+  },
+
+  // Uses a for-of loop.
+  getBooksByCategoryCounts() {
+    const counts = {};
+    for (const book of BOOKS) {
+      counts[book.category] = (counts[book.category] || 0) + 1;
     }
+    return counts;
+  },
 
-    return popularBook;
+  // Returns an object built via destructuring.
+  getSummary() {
+    this.updateStats();
+    const { totalBooks, totalMembers, totalBorrowings } = this;
+    return { totalBooks, totalMembers, totalBorrowings };
+  },
+
+  getAllBookTitles() {
+    return BOOKS.map((book) => book.title);
   },
 };
 
 // Function with string manipulation errors
 function formatBookInfo(book) {
+  validateObject(book, "Book");
   // Should use template literals
-  var info = "Title: " + book.title + "\n";
-  info = info + "Author: " + book.author + "\n";
-  info = info + "Year: " + book.year;
-
-  // Missing: proper string methods (trim, toUpperCase, etc.)
-
-  return info;
+  const title = book.title.trim().toUpperCase();
+  return `Title: ${title}\nAuthor: ${book.author}\nISBN: ${book.isbn}\nYear: ${book.year}`;
 }
 
 // Function with number/type issues
@@ -454,15 +464,32 @@ function calculateFineAmount(daysLate) {
   // Missing: typeof check
   // Missing: NaN handling
   // Missing: null/undefined check
-
-  var fine = daysLate * LATE_FEE_PER_DAY;
-
-  // Should use toFixed for currency
-  return fine;
+  validateInteger(daysLate,"Days Late");
+  const fine = Math.max(0, daysLate) * LATE_FEE_PER_DAY;
+  return Number(fine.toFixed(2));
 }
 
 // Missing: module exports
+export {
+  Book,
+  DigitalBook,
+  Member,
+  PremiumMember,
+  LibraryStats,
+  borrowBook,
+  addMultipleBooks,
+  findBookByISBN,
+  findMemberById,
+  findOverdueBooks,
+  processReturnQueue,
+  searchBooksByCategory,
+  getBooksByAuthor,
+  calculateTotalLateFees,
+  combineBookCollections,
+  updateMemberInfo,
+  formatBookInfo,
+  calculateFineAmount,
+  BOOKS,
+  MEMBERS,
+};
 // Missing: proper data structure for ISBN lookups (Map/Set)
-let book1 = new Book(null, "FGHJ", "Him", 2020, 500, 500);
-
-console.log(book1);
