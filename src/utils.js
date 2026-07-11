@@ -17,15 +17,21 @@ const ERRORS = {
         `Invalid type for ${variableName}. Please provide a value of type Number for ${variableName}`,
     numGreaterThanZero: (variableName) =>
         `${variableName} must be greater than zero. Please provide a valid number for ${variableName}`,
-    invalidIntegerValue: (variableName)=>`Please provide a valid integer value for ${variableName}.`,
+    invalidIntegerValue: (variableName) => `Please provide a valid integer value for ${variableName}.`,
     invalidYear:
         "Year provided cannot be from the future please provide a valid Year.",
     invalidEmail: "Invalid email. Please provide a valid email.",
     invalidDate: "Invalid date. Please select a valid date.",
     invalidFutureDate: "Invalid date. Date cannot be from the future.",
     invalidMembershipType: "Invalid membership type. Valid membership types are 'Standard' or 'Premium'",
-    invalidArray:(variableName)=>`Please enter a valid array for ${variableName}`
-    
+    invalidArray: (variableName) => `Please enter a valid array for ${variableName}`,
+    nullArray: (variableName) => `${variableName} cannot be null. Please provide a valid array.`,
+    undefinedArray: (variableName) => `${variableName} cannot be undefined. Please provide a valid array.`,
+    invalidObject: (variableName) => `Please enter a valid object for ${variableName}`,
+    nullObject: (variableName) => `${variableName} cannot be null. Please provide a valid object.`,
+    undefinedObject: (variableName) => `${variableName} cannot be undefined. Please provide a valid object.`,
+
+
 
 };
 
@@ -72,10 +78,10 @@ function validateNumber(numberValue, variableName, greaterThanZero = false) {
     }
 }
 
-function validateInteger(integerValue, variableName,greaterThanZero = false){
+function validateInteger(integerValue, variableName, greaterThanZero = false) {
     validateNumber(integerValue, variableName, greaterThanZero);
 
-    if(!Number.isInteger(integerValue)){
+    if (!Number.isInteger(integerValue)) {
         throw new Error(ERRORS.invalidIntegerValue(variableName));
     }
 
@@ -83,50 +89,68 @@ function validateInteger(integerValue, variableName,greaterThanZero = false){
 
 function validateYear(year) {
     validateInteger(year, "Year", true);
-   
+
     const currentYear = new Date().getFullYear();
     if (year > currentYear) {
         throw new Error(ERRORS.invalidYear);
     }
 }
 
-function validateEmail(email){
+function validateEmail(email) {
     validateString(email, "Email");
 
     let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if(!regex.test(email)){
+    if (!regex.test(email)) {
         throw new Error(ERRORS.invalidEmail);
     }
 }
 
 
-function validateDate(datePicker){
+function validateDate(datePicker) {
     const date = new Date(datePicker);
     const today = new Date();
 
-    if(isNaN(date.getTime())){
+    if (isNaN(date.getTime())) {
         throw new Error(ERRORS.invalidDate);
     }
 
-    if(date>today){
+    if (date > today) {
         throw new Error(ERRORS.invalidFutureDate);
     }
 
 }
 
-function validateMembershipType(membershipType){
-    validateString(membershipType,"Membership Type");
-    if(!VALID_MEMBERSHIP_TYPES.includes(membershipType)){
+function validateMembershipType(membershipType) {
+    validateString(membershipType, "Membership Type");
+    if (!VALID_MEMBERSHIP_TYPES.includes(membershipType)) {
         throw new Error(ERRORS.invalidMembershipType)
     }
 }
 
-function validateArray(someArray,variableName){
-    if(!Array.isArray(someArray)){
+function validateArray(someArray, variableName) {
+    if (someArray === null) {
+        throw new Error(ERRORS.nullArray(variableName));
+    }
+    if (someArray === undefined) {
+        throw new Error(ERRORS.undefinedArray(variableName));
+    }
+    if (!Array.isArray(someArray)) {
         throw new Error(ERRORS.invalidArray(variableName));
     }
 
 }
 
-export { validateISBN, validateString, validateNumber, validateYear, validateInteger, validateEmail, validateDate, validateMembershipType};
+function validateObject(someObject, variableName) {
+    if (someObject === null) {
+        throw new Error(ERRORS.nullObject(variableName));
+    }
+    if (someObject === undefined) {
+        throw new Error(ERRORS.undefinedObject(variableName));
+    }
+    if (typeof someObject !== "object" || Array.isArray(someObject)) {
+        throw new Error(ERRORS.invalidObject(variableName));
+    }
+}
+
+export { validateISBN, validateString, validateNumber, validateYear, validateInteger, validateEmail, validateDate, validateMembershipType, validateArray, validateObject };

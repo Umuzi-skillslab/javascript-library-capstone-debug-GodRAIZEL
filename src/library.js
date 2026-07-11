@@ -4,7 +4,7 @@ import {
   validateString,
   validateNumber,
   validateYear,
-  validateInteger, validateEmail, validateDate, validateMembershipType
+  validateInteger, validateEmail, validateDate, validateMembershipType, validateArray, validateObject
 } from "./utils.js";
 
 // Global state management (scoping issues)
@@ -14,25 +14,27 @@ const BOOK_ERRORS = {
   invalidBookCopies:
     "Available copies cannot be more than total copies. Please provide valid values",
   digitalCheckouts: "Digital books cannot be checked out.",
+  memberNotFound: (memberId) => `Member ${memberId} was not found.`,
+  bookNotFound: (isbn) => `Book ${isbn} was not found.`
 };
 let BOOKS = [{
-    isbn: "978...",
-    title: "Clean Code",
-    author: "Robert Martin",
-    year: 2008,
-    availableCopies: 2,
-    totalCopies: 5,
-    checkedOut: []
-  },
-  {
-    isbn: "978...",
-    title: "The Pragmatic Programmer",
-    author: "Andrew Hunt",
-    year: 1999,
-    availableCopies: 1,
-    totalCopies: 3,
-    checkedOut: []
-  }]; // Missing declaration
+  isbn: "978...",
+  title: "Clean Code",
+  author: "Robert Martin",
+  year: 2008,
+  availableCopies: 2,
+  totalCopies: 5,
+  checkedOut: []
+},
+{
+  isbn: "978...",
+  title: "The Pragmatic Programmer",
+  author: "Andrew Hunt",
+  year: 1999,
+  availableCopies: 1,
+  totalCopies: 3,
+  checkedOut: []
+}]; // Missing declaration
 let MEMBERS = []; // Wrong: should use let
 const LATE_FEE_PER_DAY = 0.5;
 const MAX_BOOKS_PER_MEMBER = 5; // Missing const
@@ -235,7 +237,7 @@ function findOverdueBooks(daysOverdue) {
         borrowDate: record.borrowDate,
         daysBorrowed: Math.floor(
           (today - new Date(record.borrowDate)) /
-            (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24)
         )
       }))
   );
@@ -243,87 +245,104 @@ function findOverdueBooks(daysOverdue) {
 
 // Function with while loop error
 function processReturnQueue(queue) {
-    validateArray(queue, "Queue");
+  validateArray(queue, "Queue");
 
-    let index = 0;
+  let index = 0;
 
-    while (index < queue.length) {
-        const item = queue[index];
+  while (index < queue.length) {
+    const item = queue[index];
 
-        console.log(`Processing return: ${item}`);
+    console.log(`Processing return: ${item}`);
 
-        index++;
-    }
+    index++;
+  }
 }
 
 // Recursive function with multiple errors
-function searchBooksByCategory(bookList, category, index) {
+function searchBooksByCategory(bookList, category, index = 0) {
+  validateArray(bookList, "Book List");
+  validateString(category, "Category");
+  validateInteger(index, "Index");
   // Missing: base case
   // Missing: undefined/null checks
   // Wrong comparison
 
-  if ((bookList[index].category = category)) {
-    return [bookList[index]].concat(
-      searchBooksByCategory(bookList, category, index + 1),
-    );
+  if (index >= bookList.length) {
+    return [];
   }
-
+  if (!bookList[index] || bookList[index].category === undefined) {
+    return searchBooksByCategory(bookList, category, index + 1);
+  }
+  if (bookList[index].category === category) {
+    return [bookList[index], ...searchBooksByCategory(bookList, category, index + 1)];
+  }
   return searchBooksByCategory(bookList, category, index + 1);
 }
 
 // Function missing array methods
 function getBooksByAuthor(authorName) {
-  var result = [];
-
-  // Should use filter method
-  for (var i = 0; i < books.length; i++) {
-    if (books[i].author == authorName) {
-      // Should use ===
-      result.push(books[i]);
-    }
-  }
-
-  return result;
+  validateString(authorName, "Author Name");
+  return BOOKS.filter((book) => book.author === authorName);
 }
 
 // Function that should use reduce
 function calculateTotalLateFees(memberRecord) {
-  var total = 0;
-
-  // Should use reduce on array
-  for (var i = 0; i < memberRecord.overdueBooks.length; i++) {
-    total = total + memberRecord.overdueBooks[i].daysLate * LATE_FEE_PER_DAY;
-  }
-
-  return total;
+  validateObject(memberRecord, "Member Record");
+  validateArray(memberRecord.overdueBooks, "Member Overdue Books");
+  return memberRecord.overdueBooks.reduce(
+    (total, record) => total + record.daysLate * LATE_FEE_PER_DAY,
+    0
+  );
 }
 
 // Function missing spread operator
-function combineBookCollections(fiction, nonFiction, reference) {
-  // Should use spread operator
-  var combined = [];
+function combineBookCollections(...collections) {
+  collections.forEach((collection, index) =>
+    validateArray(collection, `Collection ${index + 1}`)
+  );
 
-  for (var i = 0; i < fiction.length; i++) combined.push(fiction[i]);
-  for (var i = 0; i < nonFiction.length; i++) combined.push(nonFiction[i]);
-  for (var i = 0; i < reference.length; i++) combined.push(reference[i]);
-
-  return combined;
+  return collections.reduce(
+    (combined, collection) => [...combined, ...collection],
+    []
+  );
 }
 
 // Function missing rest parameters
-function addMultipleBooks(book1, book2, book3) {
-  // Should use rest parameters to accept unlimited books
-  books.push(book1);
-  books.push(book2);
-  books.push(book3);
+function addMultipleBooks(...newBooks) {
+  newBooks.forEach(book => validateObject(book, "Book"));
+
+  BOOKS.push(...newBooks);
+
+  return BOOKS;
 }
 
 // Function missing destructuring
 function updateMemberInfo(member, updates) {
+  validateObject(member, "Member");
+  validateObject(updates, "Updates");
   // Should destructure updates object
-  member.name = updates.name;
-  member.email = updates.email;
-  member.membershipType = updates.membershipType;
+
+  const {
+    name = member.name,
+    email = member.email,
+    membershipType = member.membershipType,
+  } = updates;
+
+  if (name !== member.name) {
+    validateString(name, "Name");
+  }
+
+  if (email !== member.email) {
+    validateEmail(email);
+  }
+
+  if (membershipType !== member.membershipType) {
+    validateMembershipType(membershipType);
+  }
+
+  member.name = name;
+  member.email = email;
+  member.membershipType = membershipType;
 
   return member;
 }
@@ -334,17 +353,31 @@ function borrowBook(memberId, isbn) {
   // Missing: validation for undefined/null
   // Missing: typeof checks
 
-  var member = findMemberById(memberId);
-  var book = findBookByISBN(isbn);
+  try {
+    validateString(memberId, "Member");
+    validateISBN(isbn);
 
-  // No check if member or book exists
-  if (member.canBorrow()) {
+    const member = findMemberById(memberId);
+    const book = findBookByISBN(isbn);
+
+
+    if (!member) {
+      throw new Error(BOOK_ERRORS.memberNotFound(memberId));
+    }
+    if (!book) {
+      throw new Error(BOOK_ERRORS.isbnNotFound(isbn));
+    }
+    if (!member.canBorrow() || !book.isAvailable()) {
+      return false;
+    }
+
     book.checkOut(memberId);
     member.borrowedBooks.push(isbn);
     return true;
+  } catch (error) {
+    console.error(`borrowBook error: ${error.message}`);
+    return false;
   }
-
-  return false;
 }
 
 // Helper functions with errors
