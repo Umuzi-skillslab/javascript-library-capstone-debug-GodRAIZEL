@@ -4,7 +4,7 @@ import {
   validateString,
   validateNumber,
   validateYear,
-  validateInteger,
+  validateInteger,validateEmail,validateDate,validateMembershipType
 } from "./utils.js";
 
 // Global state management (scoping issues)
@@ -109,13 +109,22 @@ class DigitalBook extends Book {
 // Member class with errors
 class Member {
   constructor(id, name, email, membershipType, joinDate) {
+    validateString(id, "Member ID");
     this.id = id;
+
+    validateString(name, "Name");
     this.name = name;
+
+    validateEmail(email);
     this.email = email;
+
+    validateMembershipType(membershipType);
     this.membershipType = membershipType;
-    this.borrowedBooks = [];
-    // Missing: joinDate property
+
+    validateDate(joinDate);
     this.joinDate = joinDate;
+
+    this.borrowedBooks = [];
   }
 
   // Missing: method to calculate membership duration
@@ -154,7 +163,7 @@ class Member {
 
   canBorrow() {
     // Wrong comparison operator
-    if ((this.borrowedBooks.length === MAX_BOOKS_PER_MEMBER)) {
+    if ((this.borrowedBooks.length >= MAX_BOOKS_PER_MEMBER)) {
       return false;
     }
     return true;

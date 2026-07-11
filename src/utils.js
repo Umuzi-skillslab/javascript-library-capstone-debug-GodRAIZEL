@@ -20,8 +20,15 @@ const ERRORS = {
     invalidIntegerValue: (variableName)=>`Please provide a valid integer value for ${variableName}.`,
     invalidYear:
         "Year provided cannot be from the future please provide a valid Year.",
+    invalidEmail: "Invalid email. Please provide a valid email.",
+    invalidDate: "Invalid date. Please select a valid date.",
+    invalidFutureDate: "Invalid date. Date cannot be from the future.",
+    invalidMembershipType: "Invalid membership type. Valid membership types are 'Standard' or 'Premium'"
+    
 
 };
+
+const VALID_MEMBERSHIP_TYPES = ["Standard", "Premium"];
 
 function validateISBN(isbn) {
     validateString(isbn, "ISBN");
@@ -82,4 +89,36 @@ function validateYear(year) {
     }
 }
 
-export { validateISBN, validateString, validateNumber, validateYear, validateInteger};
+function validateEmail(email){
+    validateString(email, "Email");
+
+    let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if(!regex.test(email)){
+        throw new Error(ERRORS.invalidEmail);
+    }
+}
+
+
+function validateDate(datePicker){
+    const date = new Date(datePicker);
+    const today = new Date();
+
+    if(isNaN(date.getTime())){
+        throw new Error(ERRORS.invalidDate);
+    }
+
+    if(date>today){
+        throw new Error(ERRORS.invalidFutureDate);
+    }
+
+}
+
+function validateMembershipType(membershipType){
+    validateString(membershipType,"Membership Type");
+    if(!VALID_MEMBERSHIP_TYPES.includes(membershipType)){
+        throw new Error(ERRORS.invalidMembershipType)
+    }
+}
+
+export { validateISBN, validateString, validateNumber, validateYear, validateInteger, validateEmail, validateDate, validateMembershipType};
