@@ -63,18 +63,25 @@ class Book {
     // No validation for available copies
     validateString(memberId, "Member ID");
 
-    if (this.checkedOut.includes(memberId)) {
-      throw new Error(BOOK_ERRORS.alreadyBorrowed);
-    }
+    const alreadyBorrowed = this.checkedOut.some(
+      record => record.memberId === memberId
+    );
+
+    const borrowDate = new Date();
 
     if (this.isAvailable()) {
-      this.checkedOut.push(memberId);
-      this.availableCopies -= 1;
+      this.checkedOut.push({
+        memberId,
+        borrowDate: borrowDate.toISOString()
+      });
+
+      this.availableCopies--;
       return true;
     }
 
     throw new Error(BOOK_ERRORS.noMoreCopies);
   }
+
 }
 
 // Digital book class with inheritance problems
@@ -190,11 +197,11 @@ class PremiumMember extends Member {
 
 // Complex function with nested loops and errors
 function findOverdueBooks(daysOverdue) {
-  var overdue = [];
+  let overdue = [];
 
   // Inefficient nested loops - should be optimized
-  for (var i = 0; i < books.length; i++) {
-    for (var j = 0; j < books[i].checkedOut.length; j++) {
+  for (let i = 0; i < books.length; i++) {
+    for (let j = 0; j < books[i].checkedOut.length; j++) {
       // Missing: actual date checking logic
       // Wrong variable scoping
       var checkoutRecord = books[i].checkedOut[j];
