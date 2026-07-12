@@ -2,6 +2,7 @@
 
 import {
   BOOKS,
+  MEMBERS,
   DigitalBook,
   borrowBook,
   findBookByISBN,
@@ -20,8 +21,13 @@ export function initializeUI() {
   filterDropdown = document.querySelector("#filter-category");
 
   if (!catalogueContainer || !searchInput || !filterDropdown) {
-    console.error("One or more required DOM elements were not found; UI may not work correctly.");
+    console.error(
+      "One or more required DOM elements were not found; UI may not work correctly.",
+    );
   }
+
+  setupNavigation();
+  showSection("catalogue-section");
 
   setupEventListeners();
   renderBookCatalogue(BOOKS);
@@ -56,10 +62,6 @@ export function setupEventListeners() {
     exportButton.addEventListener("click", handleExportClick);
   }
 
-  const catalogueTab = document.getElementById("catalogue-tab");
-  if (catalogueTab) {
-    catalogueTab.addEventListener("click", () => renderBookCatalogue(BOOKS));
-  }
 }
 
 /** Renders a list of books into the catalogue container. */
@@ -104,7 +106,7 @@ export function renderMemberList(memberList) {
       (member) => `
         <div class="member-row" data-member-id="${member.id}">
           ${member.name} (${member.membershipType})
-        </div>`
+        </div>`,
     )
     .join("");
 }
@@ -190,7 +192,9 @@ export function handleExportClick() {
 
   // ✅ verify storage helper: pass object or string depending on implementation
   const saved = saveToLocalStorage("libraryData", data);
-  alert(saved ? "Library data exported and saved." : "Failed to save library data.");
+  alert(
+    saved ? "Library data exported and saved." : "Failed to save library data.",
+  );
 }
 
 /** Displays full details for a single book by ISBN. */
@@ -234,7 +238,10 @@ export function updateStatisticsDisplay() {
   totalMembersEl.textContent = LibraryStats.totalMembers;
   booksBorrowedEl.textContent = LibraryStats.totalBorrowings;
 
-  if (avgCopiesEl && typeof LibraryStats.getAverageCopiesPerBook === "function") {
+  if (
+    avgCopiesEl &&
+    typeof LibraryStats.getAverageCopiesPerBook === "function"
+  ) {
     avgCopiesEl.textContent = LibraryStats.getAverageCopiesPerBook();
   }
 }
@@ -249,8 +256,8 @@ export function createMemberForm() {
       <label for="member-id">Member ID</label>
       <input
         type="text"
-        id="member-id"
-        name="member-id"
+        id="new-member-id"
+        name="new-member-id"
         placeholder="Unique ID"
         required
       >
@@ -273,6 +280,64 @@ export function createMemberForm() {
       <button type="submit">Add Member</button>
     </form>
   `;
+}
+
+/** Shows the selected section and hides the others. */
+export function showSection(sectionId) {
+    const sections = [
+        document.getElementById("catalogue-section"),
+        document.getElementById("borrow-section"),
+        document.getElementById("member-section"),
+        document.getElementById("statistics-section"),
+    ];
+
+    sections.forEach(section => {
+        if (!section) return;
+
+        if (
+            sectionId === "catalogue-section" &&
+            (section.id === "catalogue-section" || section.id === "borrow-section")
+        ) {
+            section.style.display = "block";
+        } else {
+            section.style.display =
+                section.id === sectionId ? "block" : "none";
+        }
+    });
+}
+
+/** Handles navigation button clicks. */
+export function setupNavigation() {
+  const catalogueTab = document.getElementById("catalogue-tab");
+  const membersTab = document.getElementById("members-tab");
+  const statisticsTab = document.getElementById("statistics-tab");
+
+  if (catalogueTab) {
+    catalogueTab.addEventListener("click", () => {
+      showSection("catalogue-section");
+      renderBookCatalogue(BOOKS);
+    });
+  }
+
+  if (membersTab) {
+    membersTab.addEventListener("click", () => {
+      showSection("member-section");
+
+      // Only call this if MEMBERS exists in library.js
+      if (typeof MEMBERS !== "undefined") {
+        renderMemberList(MEMBERS);
+      }
+
+      createMemberForm();
+    });
+  }
+
+  if (statisticsTab) {
+    statisticsTab.addEventListener("click", () => {
+      showSection("statistics-section");
+      updateStatisticsDisplay();
+    });
+  }
 }
 
 // Wait for DOMContentLoaded

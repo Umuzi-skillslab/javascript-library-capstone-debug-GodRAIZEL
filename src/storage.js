@@ -7,7 +7,9 @@
 
 import { BOOKS, MEMBERS } from './library.js';
 
-/** Serialises the current library state to a JSON string. */
+/***********************************************************
+ * Returns the current library data as a plain JavaScript object.
+ ***********************************************************/
 export function exportLibraryData() {
     try {
         return {

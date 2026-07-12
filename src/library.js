@@ -17,25 +17,9 @@ const BOOK_ERRORS = {
   memberNotFound: (memberId) => `Member ${memberId} was not found.`,
   bookNotFound: (isbn) => `Book ${isbn} was not found.`
 };
-let BOOKS = [{
-  isbn: "978...",
-  title: "Clean Code",
-  author: "Robert Martin",
-  year: 2008,
-  availableCopies: 2,
-  totalCopies: 5,
-  checkedOut: []
-},
-{
-  isbn: "978...",
-  title: "The Pragmatic Programmer",
-  author: "Andrew Hunt",
-  year: 1999,
-  availableCopies: 1,
-  totalCopies: 3,
-  checkedOut: []
-}]; // Missing declaration
-let MEMBERS = []; // Wrong: should use let
+
+// Wrong: should use let
+
 const LATE_FEE_PER_DAY = 0.5;
 const MAX_BOOKS_PER_MEMBER = 5; // Missing const
 const MAX_BOOKS_PER_PREMIUM_MEMBER = 10;
@@ -90,8 +74,8 @@ class Book {
     );
 
     if (alreadyBorrowed) {
-    throw new Error(BOOK_ERRORS.alreadyBorrowed);
-  }
+      throw new Error(BOOK_ERRORS.alreadyBorrowed);
+    }
 
     const borrowDate = new Date();
 
@@ -373,7 +357,7 @@ function borrowBook(memberId, isbn) {
       throw new Error(BOOK_ERRORS.memberNotFound(memberId));
     }
     if (!book) {
-      throw new Error(BOOK_ERRORS.bookNotFoundNot(isbn));
+      throw new Error(BOOK_ERRORS.bookNotFound(isbn));
     }
     if (!member.canBorrow() || !book.isAvailable()) {
       return false;
@@ -464,10 +448,113 @@ function calculateFineAmount(daysLate) {
   // Missing: typeof check
   // Missing: NaN handling
   // Missing: null/undefined check
-  validateInteger(daysLate,"Days Late");
+  validateInteger(daysLate, "Days Late");
   const fine = Math.max(0, daysLate) * LATE_FEE_PER_DAY;
   return Number(fine.toFixed(2));
 }
+
+let BOOKS = [new Book(
+  "9780547928227",
+  "The Hobbit",
+  "J.R.R. Tolkien",
+  1937,
+  5,
+  5,
+  "fiction"
+),
+
+new Book(
+  "9780735211292",
+  "Atomic Habits",
+  "James Clear",
+  2018,
+  4,
+  4,
+  "non-fiction"
+),
+
+new Book(
+  "9780061120084",
+  "To Kill a Mockingbird",
+  "Harper Lee",
+  1960,
+  3,
+  2,
+  "fiction"
+),
+
+new Book(
+  "9780132350884",
+  "Clean Code",
+  "Robert C. Martin",
+  2008,
+  6,
+  6,
+  "reference"
+),
+
+new Book(
+  "9781451673319",
+  "Fahrenheit 451",
+  "Ray Bradbury",
+  1953,
+  2,
+  1,
+  "fiction"
+),
+
+new DigitalBook(
+  "9780596517748",
+  "JavaScript: The Good Parts",
+  "Douglas Crockford",
+  2008,
+  3.2,        // file size in MB
+  "PDF",      // format
+  "reference"
+)
+  ,
+
+new DigitalBook(
+  "9781492056355",
+  "Learning JavaScript",
+  "Ethan Brown",
+  2020,
+  5.8,
+  "EPUB",
+  "reference"
+)];
+// Missing declaration
+let MEMBERS = [new Member(
+  "M001",
+  "John Smith",
+  "john@example.com",
+  "standard",
+  "2025-01-10"
+),
+
+new Member(
+  "M002",
+  "Sarah Johnson",
+  "sarah@example.com",
+  "premium",
+  "2025-02-18"
+),
+
+new Member(
+  "M003",
+  "Michael Brown",
+  "michael@example.com",
+  "standard",
+  "2025-03-02"
+),
+
+new Member(
+  "M004",
+  "Emily Davis",
+  "emily@example.com",
+  "premium",
+  "2025-04-11"
+)];
 
 // Missing: module exports
 export {
@@ -493,3 +580,5 @@ export {
   MEMBERS,
 };
 // Missing: proper data structure for ISBN lookups (Map/Set)
+
+console.log(BOOKS,MEMBERS);
