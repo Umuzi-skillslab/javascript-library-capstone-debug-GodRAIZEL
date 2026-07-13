@@ -10,7 +10,7 @@ import { BOOKS, MEMBERS } from './library.js';
 /***********************************************************
  * Returns the current library data as a plain JavaScript object.
  ***********************************************************/
-export function exportLibraryData() {
+function exportLibraryData() {
     try {
         return {
             BOOKS,
@@ -26,7 +26,7 @@ export function exportLibraryData() {
  * handing it back to the caller. Returns null on any failure instead of
  * throwing, so callers can show a friendly error message.
  */
-export function importLibraryData(jsonString) {
+function importLibraryData(jsonString) {
     if (typeof jsonString !== 'string') {
         console.error('importLibraryData error: jsonString must be a string.');
         return null;
@@ -44,7 +44,7 @@ export function importLibraryData(jsonString) {
 }
 
 /** Saves any JSON-serialisable value under `key` in localStorage. */
-export function saveToLocalStorage(key, data) {
+function saveToLocalStorage(key, data) {
     if (typeof key !== "string" || key.trim() === "") {
         console.error("saveToLocalStorage error: key must be a non-empty string.");
         return false;
@@ -60,7 +60,7 @@ export function saveToLocalStorage(key, data) {
 }
 
 /** Loads and parses a JSON value from localStorage, or null if absent/invalid. */
-export function loadFromLocalStorage(key) {
+function loadFromLocalStorage(key) {
     if (typeof key !== 'string' || key.trim() === '') {
         console.error('loadFromLocalStorage error: key must be a non-empty string.');
         return null;
@@ -76,3 +76,5 @@ export function loadFromLocalStorage(key) {
         return null;
     }
 }
+
+export {exportLibraryData,importLibraryData,saveToLocalStorage,loadFromLocalStorage}

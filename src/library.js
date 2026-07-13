@@ -98,7 +98,7 @@ class Book {
 class DigitalBook extends Book {
   constructor(isbn, title, author, year, fileSize, format, category) {
     // Missing: super() call with correct parameters
-    super(isbn, title, author, year, 0, 0, category);
+    super(isbn, title, author, year, 1, 1, category);
 
     validateNumber(fileSize, "File Size");
     this.fileSize = fileSize;
@@ -177,7 +177,7 @@ class Member {
   getMemberInfo() {
     const { id, name, email, membershipType, joinDate, borrowedBooks } = this;
 
-    return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks.join(",")}`;
+    return `Member Name: ${name}, Member ID: ${id}, Email: ${email}, Membership Type: ${membershipType}, Join Date: ${joinDate}, Borrowed Books: ${borrowedBooks.join(",") || "None"}`;
   }
 
   canBorrow() {
@@ -409,9 +409,18 @@ const LibraryStats = {
 
   // Uses the Math object for calculations.
   getAverageCopiesPerBook() {
-    if (BOOKS.length === 0) return 0;
-    const total = BOOKS.reduce((sum, book) => sum + book.totalCopies, 0);
-    return Math.round((total / BOOKS.length) * 100) / 100;
+    const physicalBooks = BOOKS.filter(book => !(book instanceof DigitalBook));
+
+    if (physicalBooks.length === 0) {
+      return 0;
+    }
+
+    const totalCopies = physicalBooks.reduce(
+      (sum, book) => sum + book.totalCopies,
+      0
+    );
+
+    return Math.round((totalCopies / physicalBooks.length) * 100) / 100;
   },
 
   // Uses a for-of loop.
@@ -440,6 +449,7 @@ function formatBookInfo(book) {
   validateObject(book, "Book");
   // Should use template literals
   const title = book.title.trim().toUpperCase();
+  const author = book.author.trim();
   return `Title: ${title}\nAuthor: ${book.author}\nISBN: ${book.isbn}\nYear: ${book.year}`;
 }
 
@@ -581,4 +591,4 @@ export {
 };
 // Missing: proper data structure for ISBN lookups (Map/Set)
 
-console.log(BOOKS,MEMBERS);
+console.log(BOOKS, MEMBERS);

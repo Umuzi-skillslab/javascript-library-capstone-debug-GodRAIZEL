@@ -17,7 +17,7 @@ const ERRORS = {
         `Invalid type for ${variableName}. Please provide a value of type Number for ${variableName}`,
     numGreaterThanZero: (variableName) =>
         `${variableName} must be greater than zero. Please provide a valid number for ${variableName}`,
-    numLessThanZero:(variableName)=>`${variableName} must not be less than zero. Please provide a valid number for ${variableName}`,
+    numLessThanZero: (variableName) => `${variableName} must not be less than zero. Please provide a valid number for ${variableName}`,
     invalidIntegerValue: (variableName) => `Please provide a valid integer value for ${variableName}.`,
     invalidYear:
         "Year provided cannot be from the future please provide a valid Year.",
@@ -67,21 +67,24 @@ function validateNumber(numberValue, variableName, greaterThanZero = false) {
     if (numberValue === null) {
         throw new Error(ERRORS.nullNumber(variableName));
     }
+
     if (numberValue === undefined) {
         throw new Error(ERRORS.undefinedNumber(variableName));
     }
-    if (typeof numberValue !== "number") {
+
+    if (typeof numberValue !== "number" || Number.isNaN(numberValue)) {
         throw new Error(ERRORS.invalidNumberType(variableName));
     }
 
-    if(numberValue<0){
-        throw new Error(ERRORS.numLessThanZero(variableName));
+    if (greaterThanZero) {
+        if (numberValue <= 0) {
+            throw new Error(ERRORS.numGreaterThanZero(variableName));
+        }
+    } else {
+        if (numberValue < 0) {
+            throw new Error(ERRORS.numLessThanZero(variableName));
+        }
     }
-
-    if (greaterThanZero && numberValue < 0) {
-        throw new Error(ERRORS.numGreaterThanZero(variableName));
-    }
-
 }
 
 function validateInteger(integerValue, variableName, greaterThanZero = false) {
@@ -114,10 +117,11 @@ function validateEmail(email) {
 
 
 function validateDate(datePicker) {
+    validateString(datePicker, "Join Date");
     const date = new Date(datePicker);
     const today = new Date();
 
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
         throw new Error(ERRORS.invalidDate);
     }
 
