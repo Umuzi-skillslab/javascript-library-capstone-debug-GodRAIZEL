@@ -39,6 +39,7 @@ const ERRORS = {
 const VALID_MEMBERSHIP_TYPES = ["standard", "premium"];
 
 function validateISBN(isbn) {
+    // Shared validation helpers reduce duplicated validation logic across the project.
     validateString(isbn, "ISBN");
 
     let cleanedISBN = isbn.replace(/[\s-]/g, "");
@@ -75,7 +76,7 @@ function validateNumber(numberValue, variableName, greaterThanZero = false) {
     if (typeof numberValue !== "number" || Number.isNaN(numberValue)) {
         throw new Error(ERRORS.invalidNumberType(variableName));
     }
-
+    // Ensure values are positive integers before performing calculations.
     if (greaterThanZero) {
         if (numberValue <= 0) {
             throw new Error(ERRORS.numGreaterThanZero(variableName));

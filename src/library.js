@@ -24,6 +24,7 @@ const MAX_BOOKS_PER_PREMIUM_MEMBER = 10;
 
 class Book {
   constructor(isbn, title, author, year, totalCopies, availableCopies, category) {
+    // Validate constructor arguments before creating a Book object.
     validateISBN(isbn);
     this.isbn = isbn;
 
@@ -65,7 +66,7 @@ class Book {
     const alreadyBorrowed = this.checkedOut.some(
       record => record.memberId === memberId
     );
-
+    // Prevent the same member from borrowing the same physical book twice.
     if (alreadyBorrowed) {
       throw new Error(BOOK_ERRORS.alreadyBorrowed);
     }
@@ -99,7 +100,7 @@ class DigitalBook extends Book {
 
     this.downloads = 0;
   }
-
+  // Digital books are always available because they have unlimited downloads.
   isAvailable() {
     return true;
   }
@@ -178,6 +179,7 @@ class Member {
 class PremiumMember extends Member {
   constructor(id, name, email, joinDate) {
     super(id, name, email, "premium", joinDate);
+    // Premium members have a higher borrowing limit than standard members.
     this.maxBorrowLimit = MAX_BOOKS_PER_PREMIUM_MEMBER;
   }
 
@@ -243,6 +245,7 @@ function searchBooksByCategory(bookList, category, index = 0) {
   if (!bookList[index] || bookList[index].category === undefined) {
     return searchBooksByCategory(bookList, category, index + 1);
   }
+  // Recursive call continues searching until every book has been processed.
   if (bookList[index].category === category) {
     return [bookList[index], ...searchBooksByCategory(bookList, category, index + 1)];
   }
@@ -257,6 +260,7 @@ function getBooksByAuthor(authorName) {
 function calculateTotalLateFees(memberRecord) {
   validateObject(memberRecord, "Member Record");
   validateArray(memberRecord.overdueBooks, "Member Overdue Books");
+  // Reduce is used here to calculate the total late fees efficiently.
   return memberRecord.overdueBooks.reduce(
     (total, record) => total + record.daysLate * LATE_FEE_PER_DAY,
     0

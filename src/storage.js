@@ -36,6 +36,7 @@ function saveToLocalStorage(key, data) {
     }
 
     try {
+        // Convert JavaScript objects into JSON before storing them in localStorage.
         localStorage.setItem(key, JSON.stringify(data));
         return true;
     } catch (error) {
@@ -56,7 +57,9 @@ function loadFromLocalStorage(key) {
         }
         return JSON.parse(raw);
     } catch (error) {
+        // Catch storage errors such as quota limits or invalid JSON.
         console.error(`loadFromLocalStorage error: ${error.message}`);
+        // Return null instead of throwing an exception when stored data is invalid.
         return null;
     }
 }

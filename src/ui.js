@@ -15,10 +15,12 @@ let searchInput;
 let filterDropdown;
 
 function initializeUI() {
+  // Cache frequently accessed DOM elements to avoid repeated lookups.
   catalogueContainer = document.querySelector("#catalogue-list");
   searchInput = document.getElementById("search");
   filterDropdown = document.querySelector("#filter-category");
 
+  // Stop initialization gracefully if required UI elements are missing.
   if (!catalogueContainer || !searchInput || !filterDropdown) {
     console.error(
       "One or more required DOM elements were not found; UI may not work correctly.",
@@ -34,6 +36,7 @@ function initializeUI() {
 }
 
 function setupEventListeners() {
+  // Register all user interaction events during initialization.
   if (searchInput) {
     searchInput.addEventListener("input", handleSearch);
   }
@@ -67,12 +70,14 @@ function renderBookCatalogue(bookList) {
     console.error("Catalogue container not found.");
     return;
   }
+  // Validate input before attempting to render the catalogue.
   if (!Array.isArray(bookList)) {
     console.error("renderBookCatalogue expected an array.");
     return;
   }
 
   catalogueContainer.innerHTML = "";
+  // DocumentFragment reduces unnecessary DOM reflows during rendering.
   const fragment = document.createDocumentFragment();
 
   for (const book of bookList) {
@@ -97,6 +102,7 @@ function renderMemberList(memberList) {
   const container = document.getElementById("member-list");
   if (!container || !Array.isArray(memberList)) return;
 
+   // map() generates the HTML for every member before inserting it into the DOM.
   container.innerHTML = memberList
     .map(
       (member) => `<div class="member-row" data-member-id="${member.id}">
@@ -113,6 +119,7 @@ function renderMemberList(memberList) {
 }
 
 function handleBorrowSubmit(event) {
+  // Prevent the browser from reloading the page when the form is submitted.
   event.preventDefault();
 
   const memberIdInput = document.getElementById("member-id");
@@ -130,6 +137,7 @@ function handleBorrowSubmit(event) {
     const success = borrowBook(memberId, isbn);
 
     if (success) {
+      // Refresh the catalogue so the updated availability is displayed immediately.
       alert("Book borrowed successfully.");
       renderBookCatalogue(BOOKS);
       updateStatisticsDisplay();
@@ -140,6 +148,7 @@ function handleBorrowSubmit(event) {
     console.error(`handleBorrowSubmit error: ${error.message}`);
     alert("Something went wrong while borrowing the book.");
   } finally {
+    // Reset the form regardless of whether the borrow succeeded or failed.
     event.target?.reset?.();
   }
 }
