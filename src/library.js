@@ -421,6 +421,55 @@ function calculateFineAmount(daysLate) {
   return Number(fine.toFixed(2));
 }
 
+BOOKS.push(
+  new Book(
+    "9780547928227",
+    "The Hobbit",
+    "J.R.R. Tolkien",
+    1937,
+    5,
+    2,
+    "fiction"
+  ),
+
+  new Book(
+    "9780132350884",
+    "Clean Code",
+    "Robert C. Martin",
+    2008,
+    6,
+    6,
+    "reference"
+  ),
+
+  new DigitalBook(
+    "9781491950296",
+    "Learning React",
+    "Alex Banks",
+    2020,
+    19,
+    "PDF",
+    "programming"
+  )
+);
+
+MEMBERS.push(
+  new Member(
+    "M001",
+    "John Smith",
+    "john@example.com",
+    "standard",
+    "2023-01-15"
+  ),
+
+  new PremiumMember(
+    "M002",
+    "Jane Doe",
+    "jane@example.com",
+    "2022-08-10"
+  )
+);
+
 
 export {
   Book,
