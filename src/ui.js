@@ -3,6 +3,8 @@
 import {
   BOOKS,
   MEMBERS,
+  findMemberById,
+  updateMemberInfo,
   DigitalBook,
   borrowBook,
   findBookByISBN,
@@ -103,10 +105,15 @@ export function renderMemberList(memberList) {
 
   container.innerHTML = memberList
     .map(
-      (member) => `
-        <div class="member-row" data-member-id="${member.id}">
-          ${member.name} (${member.membershipType})
-        </div>`,
+      (member) => `<div class="member-row" data-member-id="${member.id}">
+        <span>${member.name} (${member.membershipType})</span>
+
+        <button
+          class="edit-member"
+          data-member-id="${member.id}">
+          Edit
+        </button>
+      </div>`,
     )
     .join("");
 }
@@ -153,9 +160,18 @@ export function handleBookClick(event) {
 
 /** Event-delegation handler for clicks anywhere inside the member list. */
 export function handleMemberListClick(event) {
-  const memberRow = event.target.closest?.(".member-row");
-  if (!memberRow) return;
-  console.log(`Selected member: ${memberRow.dataset.memberId}`);
+    const editButton = event.target.closest(".edit-member");
+
+    if (editButton) {
+        editMember(editButton.dataset.memberId);
+        return;
+    }
+
+    const memberRow = event.target.closest(".member-row");
+
+    if (memberRow) {
+        console.log(`Selected member: ${memberRow.dataset.memberId}`);
+    }
 }
 
 /** Filters the catalogue by search term as the user types. */
@@ -282,28 +298,76 @@ export function createMemberForm() {
   `;
 }
 
+export function editMember(memberId) {
+  const member = findMemberById(memberId);
+
+  if (!member) {
+    alert("Member not found.");
+    return;
+  }
+
+  createMemberForm();
+
+  const idInput = document.getElementById("new-member-id");
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const membershipTypeInput = document.getElementById("membershipType");
+  const joinDateInput = document.getElementById("joinDate");
+  const form = document.getElementById("new-member-form");
+  const submitButton = form.querySelector("button");
+
+  idInput.value = member.id;
+  idInput.disabled = true;
+
+  nameInput.value = member.name;
+  emailInput.value = member.email;
+  membershipTypeInput.value = member.membershipType;
+  joinDateInput.value = member.joinDate;
+
+  submitButton.textContent = "Update Member";
+
+  form.addEventListener("submit", function updateHandler(event) {
+    event.preventDefault();
+
+    updateMemberInfo(member, {
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      membershipType: membershipTypeInput.value
+    });
+
+    renderMemberList(MEMBERS);
+
+    alert("Member updated successfully.");
+
+    idInput.disabled = false;
+
+    createMemberForm();
+
+  });
+}
+
 /** Shows the selected section and hides the others. */
 export function showSection(sectionId) {
-    const sections = [
-        document.getElementById("catalogue-section"),
-        document.getElementById("borrow-section"),
-        document.getElementById("member-section"),
-        document.getElementById("statistics-section"),
-    ];
+  const sections = [
+    document.getElementById("catalogue-section"),
+    document.getElementById("borrow-section"),
+    document.getElementById("member-section"),
+    document.getElementById("statistics-section"),
+  ];
 
-    sections.forEach(section => {
-        if (!section) return;
+  sections.forEach(section => {
+    if (!section) return;
 
-        if (
-            sectionId === "catalogue-section" &&
-            (section.id === "catalogue-section" || section.id === "borrow-section")
-        ) {
-            section.style.display = "block";
-        } else {
-            section.style.display =
-                section.id === sectionId ? "block" : "none";
-        }
-    });
+    if (
+      sectionId === "catalogue-section" &&
+      (section.id === "catalogue-section" || section.id === "borrow-section")
+    ) {
+      section.style.display = "block";
+    } else {
+      section.style.display =
+        section.id === sectionId ? "block" : "none";
+    }
+  });
 }
 
 /** Handles navigation button clicks. */
