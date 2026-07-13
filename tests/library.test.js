@@ -1,35 +1,32 @@
-// __tests__/library.test.js
-// Jest Tests - Library Management System
-// Updated: valid ISBNs, split borrowBook tests, added calculateTotalLateFees test, improved cleanup/assertions
 import { jest } from '@jest/globals';
 
 import {
-  Book,
-  DigitalBook,
-  Member,
-  PremiumMember,
-  LibraryStats,
-  borrowBook,
-  addMultipleBooks,
-  findBookByISBN,
-  findMemberById,
-  findOverdueBooks,
-  processReturnQueue,
-  searchBooksByCategory,
-  getBooksByAuthor,
-  calculateTotalLateFees,
-  combineBookCollections,
-  updateMemberInfo,
-  formatBookInfo,
-  calculateFineAmount,
-  BOOKS,
-  MEMBERS,
-} from '../src/library.js'; 
+    Book,
+    DigitalBook,
+    Member,
+    PremiumMember,
+    LibraryStats,
+    borrowBook,
+    addMultipleBooks,
+    findBookByISBN,
+    findMemberById,
+    findOverdueBooks,
+    processReturnQueue,
+    searchBooksByCategory,
+    getBooksByAuthor,
+    calculateTotalLateFees,
+    combineBookCollections,
+    updateMemberInfo,
+    formatBookInfo,
+    calculateFineAmount,
+    BOOKS,
+    MEMBERS,
+} from '../src/library.js';
 
 describe('Book Class', () => {
     test('should create a book instance', () => {
         var book = new Book('9780547928227', 'Test Book', 'Author Name', 2020, 5, 5, 'test-category');
-        
+
         expect(book.isbn).toBe('9780547928227');
         expect(book.title).toBe('Test Book');
         expect(book.author).toBe('Author Name');
@@ -38,20 +35,17 @@ describe('Book Class', () => {
         expect(book.availableCopies).toBe(5);
         expect(book.category).toBe('test-category');
     });
-    
+
     test('checkOut reduces availableCopies and prevents double borrow', () => {
         const book = new Book('9780735211292', 'Checkout Book', 'Author B', 2019, 2, 2, 'fiction');
         expect(book.isAvailable()).toBe(true);
         const ok = book.checkOut('MEM1');
         expect(ok).toBe(true);
         expect(book.availableCopies).toBe(1);
-        // same member cannot borrow twice
         expect(() => book.checkOut('MEM1')).toThrow();
-        // another member can borrow
         const ok2 = book.checkOut('MEM2');
         expect(ok2).toBe(true);
         expect(book.availableCopies).toBe(0);
-        // no more copies
         expect(() => book.checkOut('MEM3')).toThrow();
     });
 
@@ -82,16 +76,13 @@ describe('Book Class', () => {
 describe('DigitalBook Class', () => {
     test('DigitalBook inherits Book and sets digital-specific fields', () => {
         const d = new DigitalBook('9781492056355', 'Digital Title', 'D Author', 2021, 2.5, 'PDF', 'digital');
-        // inherits properties
         expect(d.isbn).toBe('9781492056355');
         expect(d.title).toBe('Digital Title');
         expect(d.fileSize).toBe(2.5);
         expect(d.format).toBe('PDF');
         expect(d.downloads).toBe(0);
-        // digital constructor sets copies to zero via super call
         expect(d.totalCopies).toBe(1);
         expect(d.availableCopies).toBe(1);
-        // isAvailable overridden
         expect(d.isAvailable()).toBe(true);
     });
 
@@ -109,13 +100,11 @@ describe('Member Class', () => {
         var result = member.canBorrow();
         expect(typeof result).toBe('boolean');
     });
-    
+
     test('borrow limit enforced for standard member', () => {
         var member = new Member('MB2', 'Jane Doe', 'jane@example.com', 'standard', '2020-01-01');
-        // simulate borrowed books at limit
         member.borrowedBooks = new Array(5);
         expect(member.canBorrow()).toBe(false);
-        // below limit
         member.borrowedBooks = new Array(4);
         expect(member.canBorrow()).toBe(true);
     });
@@ -123,7 +112,7 @@ describe('Member Class', () => {
     test('getMembershipDuration returns a descriptive string', () => {
         const joinDate = new Date();
         joinDate.setFullYear(joinDate.getFullYear() - 2);
-        const iso = joinDate.toISOString().slice(0,10);
+        const iso = joinDate.toISOString().slice(0, 10);
         const member = new Member('MB3', 'Dur', 'dur@example.com', 'standard', iso);
         const dur = member.getMembershipDuration();
         expect(typeof dur).toBe('string');
@@ -135,7 +124,6 @@ describe('PremiumMember Class', () => {
     test('PremiumMember inherits Member and has higher limit', () => {
         const pm = new PremiumMember('PM1', 'Premium', 'prem@example.com', '2020-01-01');
         expect(pm instanceof Member).toBe(true);
-        // premium limit should allow more borrows
         pm.borrowedBooks = new Array(9);
         expect(pm.canBorrow()).toBe(true);
         pm.borrowedBooks = new Array(10);
@@ -144,12 +132,10 @@ describe('PremiumMember Class', () => {
 });
 
 describe('Library Functions', () => {
-    // ensure we have a clean state for tests that mutate BOOKS/MEMBERS
     const originalBooks = BOOKS.slice();
     const originalMembers = MEMBERS.slice();
 
     beforeEach(() => {
-        // reset arrays to original shallow copies
         BOOKS.length = 0;
         originalBooks.forEach(b => BOOKS.push(b));
         MEMBERS.length = 0;
@@ -157,7 +143,6 @@ describe('Library Functions', () => {
     });
 
     afterAll(() => {
-        // restore original arrays
         BOOKS.length = 0;
         originalBooks.forEach(b => BOOKS.push(b));
         MEMBERS.length = 0;
@@ -172,7 +157,6 @@ describe('Library Functions', () => {
     });
 
     test('findBookByISBN returns null for valid-but-missing ISBN', () => {
-        // valid ISBN format but not present in BOOKS
         const res = findBookByISBN('9781111111111');
         expect(res).toBeNull();
     });
@@ -202,24 +186,20 @@ describe('Library Functions', () => {
             expect(typeof res).toBe('boolean');
             if (res) {
                 expect(phys.availableCopies).toBe(prev - 1);
-                // cleanup: restore availableCopies, remove isbn from member.borrowedBooks and checkedOut record
                 phys.availableCopies = prev;
                 member.borrowedBooks = member.borrowedBooks.filter(isbn => isbn !== phys.isbn);
                 phys.checkedOut = phys.checkedOut.filter(record => record.memberId !== member.id);
-                // restore any previous checkedOut records that were present before test
                 prevCheckedOut.forEach(r => {
-                  if (!phys.checkedOut.some(x => x.memberId === r.memberId && x.borrowDate === r.borrowDate)) {
-                    phys.checkedOut.push(r);
-                  }
+                    if (!phys.checkedOut.some(x => x.memberId === r.memberId && x.borrowDate === r.borrowDate)) {
+                        phys.checkedOut.push(r);
+                    }
                 });
             }
         } else {
-            // create a temporary book to test
             const tmp = new Book('9782222222222', 'Tmp', 'Tmp', 2010, 1, 1, 'tmp');
             BOOKS.push(tmp);
             const res = borrowBook(member.id, tmp.isbn);
             expect(res).toBe(true);
-            // cleanup
             BOOKS.pop();
             member.borrowedBooks = member.borrowedBooks.filter(isbn => isbn !== tmp.isbn);
         }
@@ -238,11 +218,11 @@ describe('Library Functions', () => {
 
 describe('Array Operations', () => {
     test('combineBookCollections uses spread and returns combined array', () => {
-        const a = [1,2];
-        const b = [3,4];
+        const a = [1, 2];
+        const b = [3, 4];
         const combined = combineBookCollections(a, b);
         expect(Array.isArray(combined)).toBe(true);
-        expect(combined).toEqual([1,2,3,4]);
+        expect(combined).toEqual([1, 2, 3, 4]);
     });
 
     test('addMultipleBooks uses rest parameters and pushes books (with cleanup)', () => {
@@ -251,7 +231,6 @@ describe('Array Operations', () => {
         const b2 = new Book('9784444444444', 'B', 'Y', 2002, 1, 1, 'c');
         addMultipleBooks(b1, b2);
         expect(BOOKS.length).toBe(before + 2);
-        // cleanup by popping exactly what was added
         BOOKS.pop();
         BOOKS.pop();
     });
@@ -269,14 +248,13 @@ describe('Recursive Functions', () => {
         const found = searchBooksByCategory(BOOKS, category);
         expect(Array.isArray(found)).toBe(true);
         expect(found.length).toBeGreaterThanOrEqual(1);
-        // base case: empty list returns empty array
         const empty = searchBooksByCategory([], category);
         expect(Array.isArray(empty)).toBe(true);
         expect(empty.length).toBe(0);
     });
 
     test('searchBooksByCategory handles missing category fields gracefully', () => {
-        const list = [ { isbn: 'x' }, { isbn: 'y', category: 'a' } ];
+        const list = [{ isbn: 'x' }, { isbn: 'y', category: 'a' }];
         const res = searchBooksByCategory(list, 'a');
         expect(Array.isArray(res)).toBe(true);
         expect(res.length).toBe(1);
@@ -285,8 +263,7 @@ describe('Recursive Functions', () => {
 
 describe('Error Handling', () => {
     test('borrowBook logs and returns false on thrown errors', () => {
-        // call with invalid types to trigger validation errors
-        const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const spy = jest.spyOn(console, 'error').mockImplementation(() => { });
         const res = borrowBook(null, null);
         expect(res).toBe(false);
         expect(spy).toHaveBeenCalled();
@@ -314,7 +291,7 @@ describe('Math Operations', () => {
         expect(typeof fine).toBe('number');
         expect(fine).toBeCloseTo(5 * 0.5, 2);
     });
-    
+
     test('calculateFineAmount handles zero and negative gracefully', () => {
         expect(calculateFineAmount(0)).toBe(0);
         expect(() => calculateFineAmount(-3)).toThrow();
@@ -329,7 +306,6 @@ describe('Math Operations', () => {
 
 describe('Overdue and Queue Processing', () => {
     test('findOverdueBooks returns overdue entries and includes daysBorrowed', () => {
-        // create a book with an old borrow date
         const b = new Book('9787777777777', 'Old', 'X', 2000, 1, 0, 'oldcat');
         const oldDate = new Date();
         oldDate.setDate(oldDate.getDate() - 20);
@@ -340,13 +316,12 @@ describe('Overdue and Queue Processing', () => {
         expect(overdue.some(o => o.book.isbn === b.isbn)).toBe(true);
         const entry = overdue.find(o => o.book.isbn === b.isbn);
         expect(entry).toHaveProperty('daysBorrowed');
-        // cleanup
         BOOKS.pop();
     });
 
     test('processReturnQueue iterates and logs each item', () => {
-        const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
-        processReturnQueue(['r1','r2']);
+        const spy = jest.spyOn(console, 'log').mockImplementation(() => { });
+        processReturnQueue(['r1', 'r2']);
         expect(spy).toHaveBeenCalledTimes(2);
         spy.mockRestore();
     });

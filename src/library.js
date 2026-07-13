@@ -1,4 +1,3 @@
-// Library Management System - Starter Code with Complex Errors
 import {
   validateISBN,
   validateString,
@@ -7,7 +6,6 @@ import {
   validateInteger, validateEmail, validateDate, validateMembershipType, validateArray, validateObject
 } from "./utils.js";
 
-// Global state management (scoping issues)
 const BOOK_ERRORS = {
   noMoreCopies: "There are no more available copies for this book.",
   alreadyBorrowed: "Cannot borrow book twice.",
@@ -18,13 +16,12 @@ const BOOK_ERRORS = {
   bookNotFound: (isbn) => `Book ${isbn} was not found.`
 };
 
-// Wrong: should use let
-
+let BOOKS = [];
+let MEMBERS = [];
 const LATE_FEE_PER_DAY = 0.5;
-const MAX_BOOKS_PER_MEMBER = 5; // Missing const
+const MAX_BOOKS_PER_MEMBER = 5;
 const MAX_BOOKS_PER_PREMIUM_MEMBER = 10;
 
-// Book class with multiple issues
 class Book {
   constructor(isbn, title, author, year, totalCopies, availableCopies, category) {
     validateISBN(isbn);
@@ -39,7 +36,6 @@ class Book {
     validateYear(year);
     this.year = year;
 
-    // Missing: availableCopies and totalCopies properties
     validateInteger(totalCopies, "Total Copies", true);
     this.totalCopies = totalCopies;
 
@@ -55,18 +51,15 @@ class Book {
     this.checkedOut = [];
   }
 
-  // Missing: method to check availability
   isAvailable() {
     return this.availableCopies > 0;
   }
-  // Missing: method to get book info using template literals
 
   getInfo() {
     return `Name: ${this.title}\nAuthor: ${this.author}\nYear: ${this.year}\nTotal Copies: ${this.totalCopies}\nAvailable Copies: ${this.availableCopies}`;
   }
 
   checkOut(memberId) {
-    // No validation for available copies
     validateString(memberId, "Member ID");
 
     const alreadyBorrowed = this.checkedOut.some(
@@ -94,10 +87,8 @@ class Book {
 
 }
 
-// Digital book class with inheritance problems
 class DigitalBook extends Book {
   constructor(isbn, title, author, year, fileSize, format, category) {
-    // Missing: super() call with correct parameters
     super(isbn, title, author, year, 1, 1, category);
 
     validateNumber(fileSize, "File Size");
@@ -118,14 +109,12 @@ class DigitalBook extends Book {
   }
 
   download(memberId) {
-    // Should override differently than physical checkout
     validateString(memberId, "Member ID");
     this.downloads++;
     return true;
   }
 }
 
-// Member class with errors
 class Member {
   constructor(id, name, email, membershipType, joinDate) {
     validateString(id, "Member ID");
@@ -146,7 +135,6 @@ class Member {
     this.borrowedBooks = [];
   }
 
-  // Missing: method to calculate membership duration
   getMembershipDuration() {
     let joinDateObject = new Date(this.joinDate);
     let currentDate = new Date();
@@ -173,7 +161,6 @@ class Member {
     return `Membership Duration: ${years} years ${months} months ${days} days`;
   }
 
-  // Missing: method using destructuring
   getMemberInfo() {
     const { id, name, email, membershipType, joinDate, borrowedBooks } = this;
 
@@ -181,7 +168,6 @@ class Member {
   }
 
   canBorrow() {
-    // Wrong comparison operator
     if (this.borrowedBooks.length >= MAX_BOOKS_PER_MEMBER) {
       return false;
     }
@@ -189,14 +175,12 @@ class Member {
   }
 }
 
-// Premium member with inheritance issues
 class PremiumMember extends Member {
   constructor(id, name, email, joinDate) {
     super(id, name, email, "premium", joinDate);
     this.maxBorrowLimit = MAX_BOOKS_PER_PREMIUM_MEMBER;
   }
 
-  // Should override canBorrow to allow more books
   canBorrow() {
     if (this.borrowedBooks.length >= this.maxBorrowLimit) {
       return false
@@ -206,7 +190,6 @@ class PremiumMember extends Member {
   }
 }
 
-// Complex function with nested loops and errors
 function findOverdueBooks(daysOverdue) {
   validateInteger(daysOverdue, "Days Overdue", true);
 
@@ -235,7 +218,6 @@ function findOverdueBooks(daysOverdue) {
   );
 }
 
-// Function with while loop error
 function processReturnQueue(queue) {
   validateArray(queue, "Queue");
 
@@ -250,14 +232,10 @@ function processReturnQueue(queue) {
   }
 }
 
-// Recursive function with multiple errors
 function searchBooksByCategory(bookList, category, index = 0) {
   validateArray(bookList, "Book List");
   validateString(category, "Category");
   validateInteger(index, "Index");
-  // Missing: base case
-  // Missing: undefined/null checks
-  // Wrong comparison
 
   if (index >= bookList.length) {
     return [];
@@ -271,13 +249,11 @@ function searchBooksByCategory(bookList, category, index = 0) {
   return searchBooksByCategory(bookList, category, index + 1);
 }
 
-// Function missing array methods
 function getBooksByAuthor(authorName) {
   validateString(authorName, "Author Name");
   return BOOKS.filter((book) => book.author === authorName);
 }
 
-// Function that should use reduce
 function calculateTotalLateFees(memberRecord) {
   validateObject(memberRecord, "Member Record");
   validateArray(memberRecord.overdueBooks, "Member Overdue Books");
@@ -287,7 +263,6 @@ function calculateTotalLateFees(memberRecord) {
   );
 }
 
-// Function missing spread operator
 function combineBookCollections(...collections) {
   collections.forEach((collection, index) =>
     validateArray(collection, `Collection ${index + 1}`)
@@ -299,7 +274,6 @@ function combineBookCollections(...collections) {
   );
 }
 
-// Function missing rest parameters
 function addMultipleBooks(...newBooks) {
   newBooks.forEach(book => validateObject(book, "Book"));
 
@@ -308,12 +282,9 @@ function addMultipleBooks(...newBooks) {
   return BOOKS;
 }
 
-// Function missing destructuring
 function updateMemberInfo(member, updates) {
   validateObject(member, "Member");
   validateObject(updates, "Updates");
-  // Should destructure updates object
-
   const {
     name = member.name,
     email = member.email,
@@ -339,11 +310,7 @@ function updateMemberInfo(member, updates) {
   return member;
 }
 
-// Function with no error handling
 function borrowBook(memberId, isbn) {
-  // Missing: try-catch block
-  // Missing: validation for undefined/null
-  // Missing: typeof checks
 
   try {
     validateString(memberId, "Member");
@@ -372,9 +339,7 @@ function borrowBook(memberId, isbn) {
   }
 }
 
-// Helper functions with errors
 function findMemberById(id) {
-  // Should use find method
   validateString(id, "Member ID");
   return MEMBERS.find((member) => member.id === id);
 }
@@ -382,11 +347,9 @@ function findMemberById(id) {
 function findBookByISBN(isbn) {
   validateISBN(isbn);
 
-  // Wrong loop choice
   return BOOKS.find((book) => book.isbn === isbn) || null;
 }
 
-// Statistics object with missing methods
 const LibraryStats = {
   totalBooks: 0,
   totalMembers: 0,
@@ -407,7 +370,6 @@ const LibraryStats = {
     );
   },
 
-  // Uses the Math object for calculations.
   getAverageCopiesPerBook() {
     const physicalBooks = BOOKS.filter(book => !(book instanceof DigitalBook));
 
@@ -423,7 +385,6 @@ const LibraryStats = {
     return Math.round((totalCopies / physicalBooks.length) * 100) / 100;
   },
 
-  // Uses a for-of loop.
   getBooksByCategoryCounts() {
     const counts = {};
     for (const book of BOOKS) {
@@ -432,7 +393,6 @@ const LibraryStats = {
     return counts;
   },
 
-  // Returns an object built via destructuring.
   getSummary() {
     this.updateStats();
     const { totalBooks, totalMembers, totalBorrowings } = this;
@@ -444,129 +404,20 @@ const LibraryStats = {
   },
 };
 
-// Function with string manipulation errors
 function formatBookInfo(book) {
   validateObject(book, "Book");
-  // Should use template literals
   const title = book.title.trim().toUpperCase();
   const author = book.author.trim();
   return `Title: ${title}\nAuthor: ${book.author}\nISBN: ${book.isbn}\nYear: ${book.year}`;
 }
 
-// Function with number/type issues
 function calculateFineAmount(daysLate) {
-  // Missing: typeof check
-  // Missing: NaN handling
-  // Missing: null/undefined check
   validateInteger(daysLate, "Days Late");
   const fine = Math.max(0, daysLate) * LATE_FEE_PER_DAY;
   return Number(fine.toFixed(2));
 }
 
-let BOOKS = [new Book(
-  "9780547928227",
-  "The Hobbit",
-  "J.R.R. Tolkien",
-  1937,
-  5,
-  5,
-  "fiction"
-),
 
-new Book(
-  "9780735211292",
-  "Atomic Habits",
-  "James Clear",
-  2018,
-  4,
-  4,
-  "non-fiction"
-),
-
-new Book(
-  "9780061120084",
-  "To Kill a Mockingbird",
-  "Harper Lee",
-  1960,
-  3,
-  2,
-  "fiction"
-),
-
-new Book(
-  "9780132350884",
-  "Clean Code",
-  "Robert C. Martin",
-  2008,
-  6,
-  6,
-  "reference"
-),
-
-new Book(
-  "9781451673319",
-  "Fahrenheit 451",
-  "Ray Bradbury",
-  1953,
-  2,
-  1,
-  "fiction"
-),
-
-new DigitalBook(
-  "9780596517748",
-  "JavaScript: The Good Parts",
-  "Douglas Crockford",
-  2008,
-  3.2,        // file size in MB
-  "PDF",      // format
-  "reference"
-)
-  ,
-
-new DigitalBook(
-  "9781492056355",
-  "Learning JavaScript",
-  "Ethan Brown",
-  2020,
-  5.8,
-  "EPUB",
-  "reference"
-)];
-// Missing declaration
-let MEMBERS = [new Member(
-  "M001",
-  "John Smith",
-  "john@example.com",
-  "standard",
-  "2025-01-10"
-),
-
-new Member(
-  "M002",
-  "Sarah Johnson",
-  "sarah@example.com",
-  "premium",
-  "2025-02-18"
-),
-
-new Member(
-  "M003",
-  "Michael Brown",
-  "michael@example.com",
-  "standard",
-  "2025-03-02"
-),
-
-new Member(
-  "M004",
-  "Emily Davis",
-  "emily@example.com",
-  "premium",
-  "2025-04-11"
-)];
-
-// Missing: module exports
 export {
   Book,
   DigitalBook,
@@ -589,6 +440,3 @@ export {
   BOOKS,
   MEMBERS,
 };
-// Missing: proper data structure for ISBN lookups (Map/Set)
-
-console.log(BOOKS, MEMBERS);

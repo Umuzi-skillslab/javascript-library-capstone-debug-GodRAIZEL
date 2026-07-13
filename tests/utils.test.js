@@ -9,7 +9,7 @@ import {
     validateMembershipType,
     validateArray,
     validateObject,
-} from '../src/utils.js'; // adjust path if your file is named differently
+} from '../src/utils.js';
 
 describe('validateISBN', () => {
     test('accepts a valid 13-digit ISBN (no separators)', () => {

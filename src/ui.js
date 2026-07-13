@@ -1,5 +1,3 @@
-// ui.js - DOM manipulation and event handling.
-
 import {
   BOOKS,
   MEMBERS,
@@ -16,8 +14,7 @@ let catalogueContainer;
 let searchInput;
 let filterDropdown;
 
-/** Entry point: locates the key DOM elements and wires everything up. */
-export function initializeUI() {
+function initializeUI() {
   catalogueContainer = document.querySelector("#catalogue-list");
   searchInput = document.getElementById("search");
   filterDropdown = document.querySelector("#filter-category");
@@ -33,11 +30,10 @@ export function initializeUI() {
 
   setupEventListeners();
   renderBookCatalogue(BOOKS);
-  updateStatisticsDisplay(); // ✅ update stats on first load
+  updateStatisticsDisplay();
 }
 
-/** Wires up all event listeners (7+ listeners, 2+ using delegation). */
-export function setupEventListeners() {
+function setupEventListeners() {
   if (searchInput) {
     searchInput.addEventListener("input", handleSearch);
   }
@@ -66,8 +62,7 @@ export function setupEventListeners() {
 
 }
 
-/** Renders a list of books into the catalogue container. */
-export function renderBookCatalogue(bookList) {
+function renderBookCatalogue(bookList) {
   if (!catalogueContainer) {
     console.error("Catalogue container not found.");
     return;
@@ -98,8 +93,7 @@ export function renderBookCatalogue(bookList) {
   catalogueContainer.appendChild(fragment);
 }
 
-/** Renders the member list using map + template literals. */
-export function renderMemberList(memberList) {
+function renderMemberList(memberList) {
   const container = document.getElementById("member-list");
   if (!container || !Array.isArray(memberList)) return;
 
@@ -118,8 +112,7 @@ export function renderMemberList(memberList) {
     .join("");
 }
 
-/** Handles the borrow form submission. */
-export function handleBorrowSubmit(event) {
+function handleBorrowSubmit(event) {
   event.preventDefault();
 
   const memberIdInput = document.getElementById("member-id");
@@ -139,7 +132,7 @@ export function handleBorrowSubmit(event) {
     if (success) {
       alert("Book borrowed successfully.");
       renderBookCatalogue(BOOKS);
-      updateStatisticsDisplay(); // ✅ only refresh after success
+      updateStatisticsDisplay();
     } else {
       alert("Unable to borrow this book right now.");
     }
@@ -151,31 +144,29 @@ export function handleBorrowSubmit(event) {
   }
 }
 
-/** Event-delegation handler for clicks anywhere inside the catalogue. */
-export function handleBookClick(event) {
+function handleBookClick(event) {
   const bookCard = event.target.closest?.(".book-card");
   if (!bookCard) return;
   displayBookDetails(bookCard.dataset.isbn);
 }
 
-/** Event-delegation handler for clicks anywhere inside the member list. */
-export function handleMemberListClick(event) {
-    const editButton = event.target.closest(".edit-member");
 
-    if (editButton) {
-        editMember(editButton.dataset.memberId);
-        return;
-    }
+function handleMemberListClick(event) {
+  const editButton = event.target.closest(".edit-member");
 
-    const memberRow = event.target.closest(".member-row");
+  if (editButton) {
+    editMember(editButton.dataset.memberId);
+    return;
+  }
 
-    if (memberRow) {
-        console.log(`Selected member: ${memberRow.dataset.memberId}`);
-    }
+  const memberRow = event.target.closest(".member-row");
+
+  if (memberRow) {
+    console.log(`Selected member: ${memberRow.dataset.memberId}`);
+  }
 }
 
-/** Filters the catalogue by search term as the user types. */
-export function handleSearch(event) {
+function handleSearch(event) {
   const searchTerm = event.target.value.toLowerCase().trim();
   const results = BOOKS.filter((book) => {
     return (
@@ -187,8 +178,7 @@ export function handleSearch(event) {
   renderBookCatalogue(results);
 }
 
-/** Filters the catalogue by selected category. */
-export function handleFilterChange() {
+function handleFilterChange() {
   if (!filterDropdown) return;
   const selectedCategory = filterDropdown.value;
   const filtered =
@@ -198,23 +188,20 @@ export function handleFilterChange() {
   renderBookCatalogue(filtered);
 }
 
-/** Exports current library data and persists it to localStorage. */
-export function handleExportClick() {
+function handleExportClick() {
   const data = exportLibraryData();
   if (!data) {
     alert("Failed to export library data.");
     return;
   }
 
-  // ✅ verify storage helper: pass object or string depending on implementation
   const saved = saveToLocalStorage("libraryData", data);
   alert(
     saved ? "Library data exported and saved." : "Failed to save library data.",
   );
 }
 
-/** Displays full details for a single book by ISBN. */
-export function displayBookDetails(isbn) {
+function displayBookDetails(isbn) {
   const detailsContainer = document.getElementById("book-details");
   if (!detailsContainer) return;
 
@@ -239,8 +226,7 @@ export function displayBookDetails(isbn) {
   `;
 }
 
-/** Updates the statistics panel using LibraryStats and textContent. */
-export function updateStatisticsDisplay() {
+function updateStatisticsDisplay() {
   LibraryStats.updateStats();
 
   const totalBooksEl = document.querySelector(".total-books");
@@ -262,8 +248,7 @@ export function updateStatisticsDisplay() {
   }
 }
 
-/** Dynamically builds the "add member" form. */
-export function createMemberForm() {
+function createMemberForm() {
   const formContainer = document.getElementById("member-form");
   if (!formContainer) return;
 
@@ -298,7 +283,7 @@ export function createMemberForm() {
   `;
 }
 
-export function editMember(memberId) {
+function editMember(memberId) {
   const member = findMemberById(memberId);
 
   if (!member) {
@@ -346,8 +331,7 @@ export function editMember(memberId) {
   });
 }
 
-/** Shows the selected section and hides the others. */
-export function showSection(sectionId) {
+function showSection(sectionId) {
   const sections = [
     document.getElementById("catalogue-section"),
     document.getElementById("borrow-section"),
@@ -370,8 +354,7 @@ export function showSection(sectionId) {
   });
 }
 
-/** Handles navigation button clicks. */
-export function setupNavigation() {
+function setupNavigation() {
   const catalogueTab = document.getElementById("catalogue-tab");
   const membersTab = document.getElementById("members-tab");
   const statisticsTab = document.getElementById("statistics-tab");
@@ -387,7 +370,6 @@ export function setupNavigation() {
     membersTab.addEventListener("click", () => {
       showSection("member-section");
 
-      // Only call this if MEMBERS exists in library.js
       if (typeof MEMBERS !== "undefined") {
         renderMemberList(MEMBERS);
       }
@@ -404,7 +386,8 @@ export function setupNavigation() {
   }
 }
 
-// Wait for DOMContentLoaded
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", initializeUI);
 }
+
+export { initializeUI, setupEventListeners, renderBookCatalogue, renderMemberList, handleBorrowSubmit, handleBookClick, handleSearch, handleFilterChange, handleExportClick, displayBookDetails, updateStatisticsDisplay, createMemberForm, editMember, showSection, setupNavigation }
