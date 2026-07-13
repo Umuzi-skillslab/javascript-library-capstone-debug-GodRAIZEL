@@ -1,0 +1,402 @@
+import {
+  BOOKS,
+  MEMBERS,
+  findMemberById,
+  updateMemberInfo,
+  DigitalBook,
+  borrowBook,
+  findBookByISBN,
+  LibraryStats
+} from "./library.js";
+import { exportLibraryData, saveToLocalStorage } from "./storage.js";
+
+let catalogueContainer;
+let searchInput;
+let filterDropdown;
+
+function initializeUI() {
+  // Cache frequently accessed DOM elements to avoid repeated lookups.
+  catalogueContainer = document.querySelector("#catalogue-list");
+  searchInput = document.getElementById("search");
+  filterDropdown = document.querySelector("#filter-category");
+
+  // Stop initialization gracefully if required UI elements are missing.
+  if (!catalogueContainer || !searchInput || !filterDropdown) {
+    console.error(
+      "One or more required DOM elements were not found; UI may not work correctly.",
+    );
+  }
+
+  setupNavigation();
+  showSection("catalogue-section");
+
+  setupEventListeners();
+  renderBookCatalogue(BOOKS);
+  updateStatisticsDisplay();
+}
+
+function setupEventListeners() {
+  // Register all user interaction events during initialization.
+  if (searchInput) {
+    searchInput.addEventListener("input", handleSearch);
+  }
+  if (filterDropdown) {
+    filterDropdown.addEventListener("change", handleFilterChange);
+  }
+
+  const borrowForm = document.getElementById("borrow-form");
+  if (borrowForm) {
+    borrowForm.addEventListener("submit", handleBorrowSubmit);
+  }
+
+  if (catalogueContainer) {
+    catalogueContainer.addEventListener("click", handleBookClick);
+  }
+
+  const memberList = document.getElementById("member-list");
+  if (memberList) {
+    memberList.addEventListener("click", handleMemberListClick);
+  }
+
+  const exportButton = document.getElementById("export-data");
+  if (exportButton) {
+    exportButton.addEventListener("click", handleExportClick);
+  }
+
+}
+
+function renderBookCatalogue(bookList) {
+  if (!catalogueContainer) {
+    console.error("Catalogue container not found.");
+    return;
+  }
+  // Validate input before attempting to render the catalogue.
+  if (!Array.isArray(bookList)) {
+    console.error("renderBookCatalogue expected an array.");
+    return;
+  }
+
+  catalogueContainer.innerHTML = "";
+  // DocumentFragment reduces unnecessary DOM reflows during rendering.
+  const fragment = document.createDocumentFragment();
+
+  for (const book of bookList) {
+    const available =
+      book instanceof DigitalBook ? "Unlimited" : book.availableCopies;
+
+    const bookCard = document.createElement("div");
+    bookCard.className = "book-card";
+    bookCard.dataset.isbn = book.isbn;
+    bookCard.innerHTML = `
+      <h3>${book.title}</h3>
+      <p>Author: ${book.author}</p>
+      <p>Available: ${available}</p>
+    `;
+    fragment.appendChild(bookCard);
+  }
+
+  catalogueContainer.appendChild(fragment);
+}
+
+function renderMemberList(memberList) {
+  const container = document.getElementById("member-list");
+  if (!container || !Array.isArray(memberList)) return;
+
+   // map() generates the HTML for every member before inserting it into the DOM.
+  container.innerHTML = memberList
+    .map(
+      (member) => `<div class="member-row" data-member-id="${member.id}">
+        <span>${member.name} (${member.membershipType})</span>
+
+        <button
+          class="edit-member"
+          data-member-id="${member.id}">
+          Edit
+        </button>
+      </div>`,
+    )
+    .join("");
+}
+
+function handleBorrowSubmit(event) {
+  // Prevent the browser from reloading the page when the form is submitted.
+  event.preventDefault();
+
+  const memberIdInput = document.getElementById("member-id");
+  const isbnInput = document.getElementById("isbn");
+  if (!memberIdInput || !isbnInput) return;
+
+  const memberId = memberIdInput.value.trim();
+  const isbn = isbnInput.value.trim();
+  if (!memberId || !isbn) {
+    alert("Please provide both a member ID and an ISBN.");
+    return;
+  }
+
+  try {
+    const success = borrowBook(memberId, isbn);
+
+    if (success) {
+      // Refresh the catalogue so the updated availability is displayed immediately.
+      alert("Book borrowed successfully.");
+      renderBookCatalogue(BOOKS);
+      updateStatisticsDisplay();
+    } else {
+      alert("Unable to borrow this book right now.");
+    }
+  } catch (error) {
+    console.error(`handleBorrowSubmit error: ${error.message}`);
+    alert("Something went wrong while borrowing the book.");
+  } finally {
+    // Reset the form regardless of whether the borrow succeeded or failed.
+    event.target?.reset?.();
+  }
+}
+
+function handleBookClick(event) {
+  const bookCard = event.target.closest?.(".book-card");
+  if (!bookCard) return;
+  displayBookDetails(bookCard.dataset.isbn);
+}
+
+
+function handleMemberListClick(event) {
+  const editButton = event.target.closest(".edit-member");
+
+  if (editButton) {
+    editMember(editButton.dataset.memberId);
+    return;
+  }
+
+  const memberRow = event.target.closest(".member-row");
+
+  if (memberRow) {
+    console.log(`Selected member: ${memberRow.dataset.memberId}`);
+  }
+}
+
+function handleSearch(event) {
+  const searchTerm = event.target.value.toLowerCase().trim();
+  const results = BOOKS.filter((book) => {
+    return (
+      book.title.toLowerCase().includes(searchTerm) ||
+      book.author.toLowerCase().includes(searchTerm) ||
+      (book.category && book.category.toLowerCase().includes(searchTerm))
+    );
+  });
+  renderBookCatalogue(results);
+}
+
+function handleFilterChange() {
+  if (!filterDropdown) return;
+  const selectedCategory = filterDropdown.value;
+  const filtered =
+    selectedCategory === "all"
+      ? BOOKS
+      : BOOKS.filter((book) => book.category === selectedCategory);
+  renderBookCatalogue(filtered);
+}
+
+function handleExportClick() {
+  const data = exportLibraryData();
+  if (!data) {
+    alert("Failed to export library data.");
+    return;
+  }
+
+  const saved = saveToLocalStorage("libraryData", data);
+  alert(
+    saved ? "Library data exported and saved." : "Failed to save library data.",
+  );
+}
+
+function displayBookDetails(isbn) {
+  const detailsContainer = document.getElementById("book-details");
+  if (!detailsContainer) return;
+
+  const book = findBookByISBN(isbn);
+  if (!book) {
+    detailsContainer.innerHTML = `<p>Book not found.</p>`;
+    return;
+  }
+
+  const available =
+    book instanceof DigitalBook ? "Unlimited" : book.availableCopies;
+
+  detailsContainer.innerHTML = `
+    <div class="book-details">
+      <h2>${book.title}</h2>
+      <p><strong>Author:</strong> ${book.author}</p>
+      <p><strong>ISBN:</strong> ${book.isbn}</p>
+      <p><strong>Year:</strong> ${book.year}</p>
+      <p><strong>Category:</strong> ${book.category}</p>
+      <p><strong>Available:</strong> ${available}</p>
+    </div>
+  `;
+}
+
+function updateStatisticsDisplay() {
+  LibraryStats.updateStats();
+
+  const totalBooksEl = document.querySelector(".total-books");
+  const totalMembersEl = document.querySelector(".total-members");
+  const booksBorrowedEl = document.querySelector(".books-borrowed");
+  const avgCopiesEl = document.querySelector(".avg-copies");
+
+  if (!totalBooksEl || !totalMembersEl || !booksBorrowedEl) return;
+
+  totalBooksEl.textContent = LibraryStats.totalBooks;
+  totalMembersEl.textContent = LibraryStats.totalMembers;
+  booksBorrowedEl.textContent = LibraryStats.totalBorrowings;
+
+  if (
+    avgCopiesEl &&
+    typeof LibraryStats.getAverageCopiesPerBook === "function"
+  ) {
+    avgCopiesEl.textContent = LibraryStats.getAverageCopiesPerBook();
+  }
+}
+
+function createMemberForm() {
+  const formContainer = document.getElementById("member-form");
+  if (!formContainer) return;
+
+  formContainer.innerHTML = `
+    <form id="new-member-form">
+      <label for="member-id">Member ID</label>
+      <input
+        type="text"
+        id="new-member-id"
+        name="new-member-id"
+        placeholder="Unique ID"
+        required
+      >
+
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Full name" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com" required>
+
+      <label for="membershipType">Membership Type</label>
+      <select id="membershipType" required>
+        <option value="standard">Standard</option>
+        <option value="premium">Premium</option>
+      </select>
+
+      <label for="joinDate">Join Date</label>
+      <input type="date" id="joinDate" required>
+
+      <button type="submit">Add Member</button>
+    </form>
+  `;
+}
+
+function editMember(memberId) {
+  const member = findMemberById(memberId);
+
+  if (!member) {
+    alert("Member not found.");
+    return;
+  }
+
+  createMemberForm();
+
+  const idInput = document.getElementById("new-member-id");
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const membershipTypeInput = document.getElementById("membershipType");
+  const joinDateInput = document.getElementById("joinDate");
+  const form = document.getElementById("new-member-form");
+  const submitButton = form.querySelector("button");
+
+  idInput.value = member.id;
+  idInput.disabled = true;
+
+  nameInput.value = member.name;
+  emailInput.value = member.email;
+  membershipTypeInput.value = member.membershipType;
+  joinDateInput.value = member.joinDate;
+
+  submitButton.textContent = "Update Member";
+
+  form.addEventListener("submit", function updateHandler(event) {
+    event.preventDefault();
+
+    updateMemberInfo(member, {
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      membershipType: membershipTypeInput.value
+    });
+
+    renderMemberList(MEMBERS);
+
+    alert("Member updated successfully.");
+
+    idInput.disabled = false;
+
+    createMemberForm();
+
+  });
+}
+
+function showSection(sectionId) {
+  const sections = [
+    document.getElementById("catalogue-section"),
+    document.getElementById("borrow-section"),
+    document.getElementById("member-section"),
+    document.getElementById("statistics-section"),
+  ];
+
+  sections.forEach(section => {
+    if (!section) return;
+
+    if (
+      sectionId === "catalogue-section" &&
+      (section.id === "catalogue-section" || section.id === "borrow-section")
+    ) {
+      section.style.display = "block";
+    } else {
+      section.style.display =
+        section.id === sectionId ? "block" : "none";
+    }
+  });
+}
+
+function setupNavigation() {
+  const catalogueTab = document.getElementById("catalogue-tab");
+  const membersTab = document.getElementById("members-tab");
+  const statisticsTab = document.getElementById("statistics-tab");
+
+  if (catalogueTab) {
+    catalogueTab.addEventListener("click", () => {
+      showSection("catalogue-section");
+      renderBookCatalogue(BOOKS);
+    });
+  }
+
+  if (membersTab) {
+    membersTab.addEventListener("click", () => {
+      showSection("member-section");
+
+      if (typeof MEMBERS !== "undefined") {
+        renderMemberList(MEMBERS);
+      }
+
+      createMemberForm();
+    });
+  }
+
+  if (statisticsTab) {
+    statisticsTab.addEventListener("click", () => {
+      showSection("statistics-section");
+      updateStatisticsDisplay();
+    });
+  }
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", initializeUI);
+}
+
+export { initializeUI, setupEventListeners, renderBookCatalogue, renderMemberList, handleBorrowSubmit, handleBookClick, handleSearch, handleFilterChange, handleExportClick, displayBookDetails, updateStatisticsDisplay, createMemberForm, editMember, showSection, setupNavigation }

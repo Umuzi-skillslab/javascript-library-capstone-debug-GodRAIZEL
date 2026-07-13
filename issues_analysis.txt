@@ -1,0 +1,83 @@
+Issues Analysis
+Book System
+Critical Issue
+Missing variable declarations
+Problem: Variables were declared without let or const, creating unintended global variables.
+Fix: Replaced with appropriate let and const declarations.
+Impact: Prevents global scope pollution and improves code reliability.
+Major Issue
+Missing validation and incomplete book functionality
+Problem: Book objects accepted invalid data and lacked complete checkout and availability logic.
+Fix: Added constructor validation, implemented availability checks, and completed checkout validation.
+Impact: Ensures only valid books are created and borrowing rules are enforced.
+
+DigitalBook System
+Major Issue
+Incomplete inheritance implementation
+Problem: The subclass omitted the required super() call and inherited incorrect physical book behaviour.
+Fix: Added super(), overrode checkOut() and isAvailable(), and implemented download validation.
+Impact: Correctly models digital books while enforcing appropriate business rules.
+
+Member System
+Major Issue
+Incomplete member validation and functionality
+Problem: Members accepted invalid data and lacked membership duration calculations and proper borrowing validation.
+Fix: Added constructor validation, reusable validation helpers, membership duration calculation, and corrected borrowing logic.
+Impact: Improves data integrity and correctly enforces borrowing limits.
+
+PremiumMember System
+Major Issue
+Premium member behaviour missing
+Problem: Premium members behaved the same as standard members.
+Fix: Added super(), premium-specific properties, and overridden borrowing logic.
+Impact: Supports premium borrowing limits while demonstrating inheritance and polymorphism.
+
+Library Functions
+Critical Issue
+Missing validation and error handling
+Problem: Library operations accepted invalid data and lacked exception handling.
+Fix: Added validation, try-catch blocks, and meaningful error messages.
+Impact: Prevents runtime failures and improves application reliability.
+Major Issue
+Incomplete library functionality
+Problem: Search, recursion, statistics, and collection operations were incomplete or used outdated implementations.
+Fix: Implemented recursive searching, modern array methods, destructuring, spread/rest operators, and statistics helpers.
+Impact: Improves maintainability while meeting modern JavaScript requirements.
+
+DOM / UI
+Critical Issue
+UI initialized before the DOM loaded
+Problem: Elements were accessed before the DOM existed.
+Fix: Delayed initialization using DOMContentLoaded and added defensive null checks.
+Impact: Prevents initialization errors.
+Major Issue
+Incomplete user interface functionality
+Problem: Navigation, rendering, search/filtering, borrowing, statistics, and event handling were incomplete.
+Fix: Implemented navigation, rendering, event delegation, validation, error handling, and dynamic UI updates.
+Impact: Produces a fully interactive and reliable interface.
+
+Storage (JSON / localStorage)
+Critical Issue
+Missing persistence error handling
+Problem: JSON parsing and localStorage operations could fail without handling exceptions.
+Fix: Added validation and try-catch blocks to all storage operations.
+Impact: Prevents crashes and ensures reliable data persistence.
+Major Issue
+Incorrect JSON serialization
+Problem: Data was not consistently serialized or deserialized.
+Fix: Implemented JSON.stringify() and JSON.parse() with validation.
+Impact: Ensures data is stored and restored correctly.
+
+Testing
+Critical Issue
+Incomplete automated test suite
+Problem: The provided tests were incomplete and no tests existed for several modules.
+Fix: Expanded library.test.js and created comprehensive test suites for ui.js, storage.js, and utils.js.
+Impact: Achieved over 95% code coverage with all tests passing.
+Major Issue
+Missing edge cases and mocking
+Problem: Starter tests lacked edge cases, browser mocks, and comprehensive assertions.
+Fix: Added mock data, jsdom configuration, browser API mocks, and extensive success/failure scenario testing.
+Impact: Produces reliable, repeatable automated tests and validates all project requirements.
+
+
